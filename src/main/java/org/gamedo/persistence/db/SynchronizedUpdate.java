@@ -13,8 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class SynchronizedUpdate extends Update
-{
+public class SynchronizedUpdate extends Update {
     private static final String MAP_HOLDER = "MAP_HOLDER";
     @Setter
     private static MongoConverter CONVERTER = null;
@@ -27,8 +26,7 @@ public class SynchronizedUpdate extends Update
         this.lock = this;
     }
 
-    private Object convert(final Object value)
-    {
+    private Object convert(final Object value) {
         if (SimpleTypeHolder.DEFAULT.isSimpleType(value.getClass())) {
             return value;
         }
@@ -42,8 +40,7 @@ public class SynchronizedUpdate extends Update
 
             CONVERTER.write(map, document);
             return document.get(MAP_HOLDER);
-        }
-        else {
+        } else {
             CONVERTER.write(value, document);
             return document;
         }
@@ -84,7 +81,9 @@ public class SynchronizedUpdate extends Update
         return super.push(keyPrefix + key);
     }
 
-    /** @deprecated */
+    /**
+     * @deprecated
+     */
     @Deprecated
     @Synchronized("lock")
     @SuppressWarnings("deprecation")

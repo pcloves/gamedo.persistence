@@ -1,10 +1,10 @@
 package org.gamedo.persistence.converter;
 
+import lombok.extern.slf4j.Slf4j;
+import org.bson.Document;
 import org.gamedo.persistence.annotations.ComponentMap;
 import org.gamedo.persistence.config.MongoConfiguration;
 import org.gamedo.persistence.db.EntityDbData;
-import lombok.extern.slf4j.Slf4j;
-import org.bson.Document;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mongodb.core.convert.MongoConverter;
 import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;

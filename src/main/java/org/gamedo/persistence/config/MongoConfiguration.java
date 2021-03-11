@@ -1,10 +1,12 @@
 package org.gamedo.persistence.config;
 
 import lombok.Getter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.*;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 
@@ -12,17 +14,20 @@ import java.util.Arrays;
 import java.util.Collections;
 
 @Configuration
+@ConditionalOnBean(MongoTemplate.class)
 public class MongoConfiguration {
 
     @Getter
     private final MongoConverter mongoConverter;
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public MongoConfiguration(final MongoDatabaseFactory factory) {
         this.mongoConverter = mongoConverter(factory);
     }
 
     /**
      * inner {@link MongoConverter} for {@link Converter Converter}
+     *
      * @param factory the MongoDatabaseFactory
      * @return MongoConverter
      */
@@ -42,8 +47,9 @@ public class MongoConfiguration {
         return converter;
     }
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Bean
-    public MongoCustomConversions mongoCustomConversions(Converter... converters) {
+    public MongoCustomConversions mongoCustomConversions(Converter<?, ?>... converters) {
         return new MongoCustomConversions(Arrays.asList(converters));
     }
 }

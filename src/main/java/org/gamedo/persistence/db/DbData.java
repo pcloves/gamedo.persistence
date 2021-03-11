@@ -10,15 +10,18 @@ import org.springframework.data.mongodb.core.query.Update;
  * <li>has an Update for incrementally serialization</li>
  * </ul>
  */
-public interface DbData
-{
-    default void setId(String id) {}
-
-    default void setId(ObjectId id) {}
-
+public interface DbData {
     String getId();
 
-    default String getDocumentKeyPrefix() {return "";}
+    default void setId(String id) {
+    }
+
+    default void setId(ObjectId id) {
+    }
+
+    default String getDocumentKeyPrefix() {
+        return "";
+    }
 
     Update getUpdate();
 

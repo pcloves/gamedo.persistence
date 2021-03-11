@@ -1,8 +1,11 @@
 package org.gamedo.persistence.db;
 
-import org.gamedo.persistence.annotations.ComponentMap;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.bson.types.ObjectId;
+import org.gamedo.persistence.annotations.ComponentMap;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.annotation.Transient;
@@ -16,8 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Getter
 @Setter
 @ToString
-public class EntityDbData implements DbData
-{
+public class EntityDbData implements DbData {
     /**
      * entity db data id
      */
@@ -57,8 +59,7 @@ public class EntityDbData implements DbData
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends ComponentDbData> T getComponentDbData(final Class<T> dbData)
-    {
+    public <T extends ComponentDbData> T getComponentDbData(final Class<T> dbData) {
         try {
             return (T) this.componentDbDataMap.get(dbData.getSimpleName());
         } catch (Exception e) {
@@ -66,8 +67,7 @@ public class EntityDbData implements DbData
         }
     }
 
-    public <T extends ComponentDbData> boolean hasComponentDbData(final Class<T> dbData)
-    {
+    public <T extends ComponentDbData> boolean hasComponentDbData(final Class<T> dbData) {
         return this.componentDbDataMap.containsKey(dbData.getSimpleName());
     }
 }

@@ -1,6 +1,8 @@
 package org.gamedo.persistence.db;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.query.Update;
@@ -20,8 +22,7 @@ public abstract class ComponentDbData implements DbData {
     @Transient
     private volatile Update update;
 
-    public ComponentDbData()
-    {
+    public ComponentDbData() {
         //We use the class's simple name as the field name.
         this.update = new SynchronizedUpdate(getClass().getSimpleName() + ".");
     }
