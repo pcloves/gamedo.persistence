@@ -1,4 +1,4 @@
-package org.gamedo.persistence.persistence.db;
+package org.gamedo.persistence.db;
 
 import lombok.Setter;
 import lombok.Synchronized;

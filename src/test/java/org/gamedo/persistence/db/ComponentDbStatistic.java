@@ -1,6 +1,5 @@
 package org.gamedo.persistence.db;
 
-import org.gamedo.persistence.persistence.db.ComponentDbData;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.mongodb.core.mapping.Document;

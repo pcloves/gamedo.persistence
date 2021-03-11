@@ -1,4 +1,4 @@
-package org.gamedo.persistence.persistence.config;
+package org.gamedo.persistence.config;
 
 import lombok.Getter;
 import org.springframework.context.annotation.Bean;

@@ -1,6 +1,6 @@
-package org.gamedo.persistence.persistence.db;
+package org.gamedo.persistence.db;
 
-import org.gamedo.persistence.persistence.annotations.ComponentMap;
+import org.gamedo.persistence.annotations.ComponentMap;
 import lombok.*;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -48,12 +48,12 @@ public class EntityDbData implements DbData
         this(id.toString(), componentDbDataMap);
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends ComponentDbData> T addComponentDbData(final T dbData) {
 
         dbData.setId(id);
-        final DbData data = this.componentDbDataMap.put(dbData.getClass().getSimpleName(), dbData);
 
-        return dbData;
+        return (T) this.componentDbDataMap.put(dbData.getClass().getSimpleName(), dbData);
     }
 
     @SuppressWarnings("unchecked")
@@ -64,6 +64,11 @@ public class EntityDbData implements DbData
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public <T extends ComponentDbData> boolean hasComponentDbData(final Class<T> dbData)
+    {
+        return this.componentDbDataMap.containsKey(dbData.getSimpleName());
     }
 }
 

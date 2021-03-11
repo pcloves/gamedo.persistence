@@ -8,7 +8,7 @@ import org.gamedo.persistence.config.MyConfiguration;
 import org.gamedo.persistence.db.ComponentDbBag;
 import org.gamedo.persistence.db.ComponentDbStatistic;
 import org.gamedo.persistence.db.EntityDbPlayer;
-import org.gamedo.persistence.persistence.core.DbDataMongoTemplate;
+import org.gamedo.persistence.core.DbDataMongoTemplate;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

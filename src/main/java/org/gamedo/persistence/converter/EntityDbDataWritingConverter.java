@@ -1,7 +1,7 @@
-package org.gamedo.persistence.persistence.converter;
+package org.gamedo.persistence.converter;
 
-import org.gamedo.persistence.persistence.config.MongoConfiguration;
-import org.gamedo.persistence.persistence.db.EntityDbData;
+import org.gamedo.persistence.config.MongoConfiguration;
+import org.gamedo.persistence.db.EntityDbData;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.stereotype.Component;
 

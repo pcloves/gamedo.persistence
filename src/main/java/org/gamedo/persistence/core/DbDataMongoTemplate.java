@@ -1,7 +1,7 @@
-package org.gamedo.persistence.persistence.core;
+package org.gamedo.persistence.core;
 
-import org.gamedo.persistence.persistence.db.DbData;
-import org.gamedo.persistence.persistence.db.SynchronizedUpdate;
+import org.gamedo.persistence.db.DbData;
+import org.gamedo.persistence.db.SynchronizedUpdate;
 import com.mongodb.client.result.UpdateResult;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;

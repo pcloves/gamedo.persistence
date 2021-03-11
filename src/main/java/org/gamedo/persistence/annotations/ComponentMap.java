@@ -1,4 +1,4 @@
-package org.gamedo.persistence.persistence.annotations;
+package org.gamedo.persistence.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
