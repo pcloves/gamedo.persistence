@@ -1,7 +1,6 @@
 package org.gamedo.persistence;
 
 import com.mongodb.client.result.UpdateResult;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.gamedo.persistence.config.MyConfiguration;
@@ -55,9 +54,8 @@ class DbDataMongoTemplateTest {
         });
     }
 
-    @SneakyThrows
     @Test
-    public void testSave() {
+    public void testFindAll() {
         final List<EntityDbPlayer> entityDbPlayerList = mongoTemplate.findAll(EntityDbPlayer.class);
 
         Assertions.assertEquals(entityDbPlayerList.size(), 1);
@@ -68,21 +66,19 @@ class DbDataMongoTemplateTest {
         Assertions.assertEquals(DEFAULT_NAME, componentDbStatistic.getName());
     }
 
-    @SneakyThrows
     @Test
-    public void testIncrementalUpdate() {
+    public void testUpsert() {
         final List<EntityDbPlayer> entityDbPlayerList = mongoTemplate.findAll(EntityDbPlayer.class);
 
         final EntityDbPlayer entityDbData = entityDbPlayerList.get(0);
         final ComponentDbStatistic componentDbStatistic = entityDbData.getComponentDbData(ComponentDbStatistic.class);
 
         componentDbStatistic.setName("hello");
-        componentDbStatistic.getUpdate().set("name", componentDbStatistic.getName());
+        componentDbStatistic.getUpdater().set("name", componentDbStatistic.getName());
 
-        final CompletableFuture<UpdateResult> future = dbDataMongoTemplate.upsert(componentDbStatistic);
-        Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
+        final CompletableFuture<UpdateResult> future = dbDataMongoTemplate.updateFirst(componentDbStatistic);
+        final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
 
-        final UpdateResult updateResult = future.get();
         Assertions.assertEquals(1, updateResult.getModifiedCount());
         Assertions.assertEquals(1, updateResult.getModifiedCount());
         Assertions.assertNull(updateResult.getUpsertedId());
@@ -90,11 +86,110 @@ class DbDataMongoTemplateTest {
         final List<EntityDbPlayer> entityDbPlayerList1 = mongoTemplate.findAll(EntityDbPlayer.class);
         Assertions.assertEquals(entityDbPlayerList1.size(), 1);
 
-
         final EntityDbPlayer entityDbData1 = entityDbPlayerList1.get(0);
         final ComponentDbStatistic componentDbStatistic1 = entityDbData1.getComponentDbData(ComponentDbStatistic.class);
 
         Assertions.assertNotNull(componentDbStatistic1);
-        Assertions.assertEquals(componentDbStatistic1.getName(), "hello");
+        Assertions.assertEquals("hello", componentDbStatistic1.getName());
+    }
+
+    @Test
+    public void testUpsertAsync()
+    {
+        final List<EntityDbPlayer> entityDbPlayerList = mongoTemplate.findAll(EntityDbPlayer.class);
+
+        final EntityDbPlayer entityDbData = entityDbPlayerList.get(0);
+        final ComponentDbStatistic componentDbStatistic = entityDbData.getComponentDbData(ComponentDbStatistic.class);
+
+        componentDbStatistic.setName("hello");
+        componentDbStatistic.getUpdater().set("name", componentDbStatistic.getName());
+        final CompletableFuture<UpdateResult> future = dbDataMongoTemplate.updateFirstAsync(componentDbStatistic);
+        final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
+
+        Assertions.assertEquals(1, updateResult.getMatchedCount());
+        Assertions.assertEquals(1, updateResult.getModifiedCount());
+    }
+
+    @Test
+    public void testUpsertComponentDbDataWithoutSave() {
+
+        mongoTemplate.dropCollection(EntityDbPlayer.class);
+
+        final EntityDbPlayer entityDbData = new EntityDbPlayer(new ObjectId().toString(), null);
+
+        entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
+        entityDbData.setComponentDbDataDirty(ComponentDbStatistic.class);
+
+        final CompletableFuture<UpdateResult> future = dbDataMongoTemplate.updateFirst(entityDbData);
+        final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
+
+        Assertions.assertEquals(0, updateResult.getMatchedCount());
+        Assertions.assertEquals(0, updateResult.getModifiedCount());
+        Assertions.assertNull(updateResult.getUpsertedId());
+
+        final List<EntityDbPlayer> entityDbPlayerList = mongoTemplate.findAll(EntityDbPlayer.class);
+        Assertions.assertEquals(0, entityDbPlayerList.size());
+    }
+
+    @Test
+    public void testUpsertAllComponentDbDataWithoutSave() {
+
+        mongoTemplate.dropCollection(EntityDbPlayer.class);
+
+        final EntityDbPlayer entityDbData = new EntityDbPlayer(new ObjectId().toString(), null);
+
+        entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
+        entityDbData.setAllComponentDbDataDirty();
+
+        final CompletableFuture<UpdateResult> future = dbDataMongoTemplate.updateFirst(entityDbData);
+        final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
+
+        Assertions.assertEquals(0, updateResult.getMatchedCount());
+        Assertions.assertEquals(0, updateResult.getModifiedCount());
+        Assertions.assertNull(updateResult.getUpsertedId());
+    }
+
+    @Test
+    public void testUpsertComponentDbData() {
+
+        mongoTemplate.dropCollection(EntityDbPlayer.class);
+
+        final EntityDbPlayer entityDbData = new EntityDbPlayer(new ObjectId().toString(), null);
+        mongoTemplate.save(entityDbData);
+
+        entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
+        entityDbData.setComponentDbDataDirty(ComponentDbStatistic.class);
+
+        final CompletableFuture<UpdateResult> future = dbDataMongoTemplate.updateFirst(entityDbData);
+        final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
+
+        Assertions.assertEquals(1, updateResult.getMatchedCount());
+        Assertions.assertEquals(1, updateResult.getModifiedCount());
+        Assertions.assertNull(updateResult.getUpsertedId());
+
+        final List<EntityDbPlayer> entityDbPlayerList = mongoTemplate.findAll(EntityDbPlayer.class);
+        Assertions.assertEquals(1, entityDbPlayerList.size());
+    }
+
+    @Test
+    public void testUpsertAllComponentDbData() {
+
+        mongoTemplate.dropCollection(EntityDbPlayer.class);
+
+        final EntityDbPlayer entityDbData = new EntityDbPlayer(new ObjectId().toString(), null);
+        mongoTemplate.save(entityDbData);
+
+        entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
+        entityDbData.setAllComponentDbDataDirty();
+
+        final CompletableFuture<UpdateResult> future = dbDataMongoTemplate.updateFirst(entityDbData);
+        final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
+
+        Assertions.assertEquals(1, updateResult.getMatchedCount());
+        Assertions.assertEquals(1, updateResult.getModifiedCount());
+        Assertions.assertNull(updateResult.getUpsertedId());
+
+        final List<EntityDbPlayer> entityDbPlayerList = mongoTemplate.findAll(EntityDbPlayer.class);
+        Assertions.assertEquals(1, entityDbPlayerList.size());
     }
 }

@@ -3,16 +3,15 @@ package org.gamedo.persistence.db;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Transient;
-import org.springframework.data.mongodb.core.query.Update;
 
 @Getter
 @Setter
 @ToString
 public abstract class ComponentDbData implements DbData {
+
     /**
-     * the entity id that belongs to.
+     * the entity's id belongs to.
      */
     @Transient
     private volatile String id;
@@ -20,20 +19,35 @@ public abstract class ComponentDbData implements DbData {
      * the update of this ComponentDbData
      */
     @Transient
-    private volatile Update update;
+    private volatile Updater update;
+
+    @Transient
+    private final String mongoDbFieldName;
 
     public ComponentDbData() {
         //We use the class's simple name as the field name.
-        this.update = new SynchronizedUpdate(getClass().getSimpleName() + ".");
+        final Class<? extends ComponentDbData> clazz = getClass();
+        this.mongoDbFieldName = clazz.getSimpleName();
+        this.update = new SynchronizedUpdater(getMongoDbFieldName());
     }
 
     @Override
-    public void setId(ObjectId id) {
-        this.id = id.toString();
+    public Updater getUpdater() {
+        return update;
+    }
+
+    @Override
+    public void setUpdater(Updater update) {
+        this.update = update;
     }
 
     @Override
     public void setId(String id) {
         this.id = id;
+    }
+
+    @Override
+    public String getMongoDbFieldName() {
+        return mongoDbFieldName;
     }
 }

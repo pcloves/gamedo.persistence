@@ -1,29 +1,57 @@
 package org.gamedo.persistence.db;
 
-import org.bson.types.ObjectId;
-import org.springframework.data.mongodb.core.query.Update;
-
 /**
  * the DbData interface means it:
  * <ul>
- * <li>has an unique id for query/save</li>
+ * <li>has an unique id for query/update</li>
  * <li>has an Update for incrementally serialization</li>
  * </ul>
  */
 public interface DbData {
+    /**
+     * @return get the id mapping the _id field in MongoDB
+     */
     String getId();
 
-    default void setId(String id) {
-    }
+    /**
+     * @param id set the id
+     */
+    void setId(String id);
 
-    default void setId(ObjectId id) {
-    }
+    /**
+     * Return the DbData document field name in MongoDB, supposing we have a MongoDB document:
+     * <pre>{@code
+     * {
+     *     "_id" : ObjectId("604f66b6f695830356a6fd56"),
+     *     "_class" : "org.gamedo.persistence.db.EntityDbPlayer",
+     *     "ComponentDbBag" : {
+     *         "itemList" : [
+     *
+     *         ],
+     *         "_class" : "org.gamedo.persistence.db.ComponentDbBag"
+     *     },
+     *     "ComponentDbStatistic" : {
+     *         "name" : "test",
+     *         "_class" : "org.gamedo.persistence.db.ComponentDbStatistic"
+     *     }
+     * }
+     * }</pre>
+     * If the embedded document ComponentDbBag implement this DbData interface, The String of 'ComponentDbBag' should be
+     * the return value of getMongoDbFieldName. If the whole document implement the DbData interface, the getMongoDbField
+     * name should return an empty String.
+     * @return return the full field name in MongoDB
+     */
+    String getMongoDbFieldName();
 
-    default String getDocumentKeyPrefix() {
-        return "";
-    }
+    /**
+     * return the Updater of this DbData own.
+     * @return the Updater is using.
+     */
+    Updater getUpdater();
 
-    Update getUpdate();
-
-    void setUpdate(Update update);
+    /**
+     * set a new updater of this DbData
+     * @param updater the new Updater
+     */
+    void setUpdater(Updater updater);
 }
