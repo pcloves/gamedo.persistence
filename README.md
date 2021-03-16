@@ -1,4 +1,4 @@
-![GitHub](https://img.shields.io/github/license/pcloves/gamedo.persistence?style=flat-square)![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/pcloves/gamedo.persistence?style=flat-square)![Maven Central](https://img.shields.io/maven-central/v/org.gamedo/persistence)![GitHub Workflow Status](https://img.shields.io/github/workflow/status/pcloves/gamedo.persistence/Java%20CI%20with%20Maven?style=flat-square)
+![GitHub](https://img.shields.io/github/license/pcloves/gamedo.persistence?style=flat-square)![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/pcloves/gamedo.persistence?style=flat-square)![Maven Central](https://img.shields.io/maven-central/v/org.gamedo/persistence?style=flat-square)![GitHub Workflow Status](https://img.shields.io/github/workflow/status/pcloves/gamedo.persistence/Java%20CI%20with%20Maven?style=flat-square)
 
 
 # gamedo.persistence
@@ -76,26 +76,28 @@ public class EntityDbPlayerWriterConverter extends AbstractEntityDbDataWritingCo
 public class Application {
     public static void main(String[] args) {
         final ConfigurableApplicationContext applicationContext = SpringApplication.run(Application.class, args);
+
         //1、从容器中获取DbDataMongoTemplate（否则不具有异步持久化能力）
         final DbDataMongoTemplate dataMongoTemplate = applicationContext.getBean(DbDataMongoTemplate.class);
         //2、创建一个EntityDbData
         final EntityDbPlayer entityDbPlayer = new EntityDbPlayer(new ObjectId().toString(), null);
-      
-				//3、增加一个组件数据：ComponentDbData
+
+        //3、增加一个组件数据：ComponentDbData
         entityDbPlayer.addComponentDbData(new ComponentDbBag(new ArrayList<>()));
 
-      	//4、调用同步save函数，将完整的EntityDbPlayer持久化到MongoDB中，同样可以调用dataMongoTemplate.saveAsync(entityDbPlayer)
+        //4、调用同步save函数，将完整的EntityDbPlayer持久化到MongoDB中，同样可以调用dataMongoTemplate.saveAsync(entityDbPlayer)
         //实现异步存储，可以参考接下来的示例
         dataMongoTemplate.save(entityDbPlayer);
-      
+
         //----------------------------------------------------------------------
-      
+
         //5、获取组件数据
         final ComponentDbBag componentDbData = entityDbPlayer.getComponentDbData(ComponentDbBag.class);
         //6、修改组件数据
         componentDbData.getItemList().add(1);
         //7、对修改的成员变量进行标脏
-        componentDbData.getUpdate().set("itemList", componentDbData.getItemList());
+        componentDbData.getUpdater().setDirty("itemList", componentDbData.getItemList());
+
         //8、通过CompletableFuture检查执行结果
         final CompletableFuture<UpdateResult> future = dataMongoTemplate.updateFirstAsync(componentDbData);
         future.whenCompleteAsync((result, t) -> {
@@ -107,6 +109,7 @@ public class Application {
 
             applicationContext.close();
         });
+
         log.info("Application run finish.");
     }
 }
@@ -127,9 +130,32 @@ public class Application {
 }
 ```
 
-当程序运行结束后，
+第5~8步骤属于gamedo.persistence提供的**异步**的**局部增量更新**的特性，当程序运行结束后，MongoDB中数据为：
 
+``` json
+{ 
+    "_id" : ObjectId("60505a7b35f0b86566a75193"), 
+    "_class" : "org.gamedo.db.EntityDbPlayer", 
+    "ComponentDbBag" : {
+        "itemList" : [
+            NumberInt(1)
+        ], 
+        "_class" : "org.gamedo.db.ComponentDbBag"
+    }
+}
+```
 
+通过对比可知，文档中仅仅ComponentDbBag.itemList发生了变化。控制台日志输出为：
+
+``` 
+2021-03-16 15:21:05.265  INFO 36044 --- [           main] org.gamedo.Application                   : application run finish.
+2021-03-16 15:21:05.275  INFO 36044 --- [nPool-worker-19] org.gamedo.Application                   : updateFirstAsync finish, result:AcknowledgedUpdateResult{matchedCount=1, modifiedCount=1, upsertedId=null}
+```
+
+通过日志可知：
+
+1. 持久化发生在nPool-worker-19线程，而非main主线程
+2. 持久化日志在主线程日志之后打印，也即不会阻塞main主线程的业务逻辑
 
 ## 设计思想
 
