@@ -117,7 +117,7 @@ public class Application {
 
 当执行完第4步后，MongoDB中数据为：
 
-``` json
+``` 
 { 
     "_id" : ObjectId("604f485ce3d58d6ff1fd6f1f"), 
     "_class" : "org.gamedo.db.EntityDbPlayer", 
@@ -132,7 +132,7 @@ public class Application {
 
 第5~8步骤属于gamedo.persistence提供的**异步**的**局部增量更新**的特性，当程序运行结束后，MongoDB中数据为：
 
-``` json
+``` 
 { 
     "_id" : ObjectId("60505a7b35f0b86566a75193"), 
     "_class" : "org.gamedo.db.EntityDbPlayer", 
@@ -168,7 +168,7 @@ public class Application {
 
 在gamedo.persistence的实现中，EntityDbData中含有一个Map<String, ComponentDbData>的成员变量，其中Key为ComponentDbData所代表的java.lang.Class的getSimpleName()返回值，Value为ComponentDbData的子类实现。DbData、EntityDbData、ComponentDbData的继承关系如图所示：
 
-[![6ssys1.png](https://s3.ax1x.com/2021/03/16/6ssys1.png)](https://imgtu.com/i/6ssys1)
+[![6ssys1.png](https://raw.sevencdn.com/pcloves/gamedo.persistence/main/images/gamedo.persistence.DbData-UML.png)](https://imgtu.com/i/6ssys1)
 
 ### 高性能：化整为零
 
