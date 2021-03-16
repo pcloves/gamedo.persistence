@@ -56,7 +56,7 @@ public class SynchronizedUpdater implements Updater
     }
 
     @Synchronized("lock")
-    public void set(final String key, final Object value) {
+    public void setDirty(final String key, final Object value) {
         update.set(keyPrefix + key, convert(value));
         isDirty = true;
     }

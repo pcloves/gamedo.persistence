@@ -93,7 +93,7 @@ public class EntityDbData implements DbData {
      * set all componentDbData dirty
      */
     public void setAllComponentDbDataDirty() {
-        componentDbDataMap.forEach((key, componentDbData) -> this.updater.set(key, componentDbData));
+        componentDbDataMap.forEach((key, componentDbData) -> this.updater.setDirty(key, componentDbData));
     }
 
     /**
@@ -110,7 +110,7 @@ public class EntityDbData implements DbData {
             return false;
         }
 
-        this.updater.set(key, componentDbData);
+        this.updater.setDirty(key, componentDbData);
         return true;
     }
 }

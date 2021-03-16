@@ -74,7 +74,7 @@ class DbDataMongoTemplateTest {
         final ComponentDbStatistic componentDbStatistic = entityDbData.getComponentDbData(ComponentDbStatistic.class);
 
         componentDbStatistic.setName("hello");
-        componentDbStatistic.getUpdater().set("name", componentDbStatistic.getName());
+        componentDbStatistic.getUpdater().setDirty("name", componentDbStatistic.getName());
 
         final CompletableFuture<UpdateResult> future = dbDataMongoTemplate.updateFirst(componentDbStatistic);
         final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
@@ -102,7 +102,7 @@ class DbDataMongoTemplateTest {
         final ComponentDbStatistic componentDbStatistic = entityDbData.getComponentDbData(ComponentDbStatistic.class);
 
         componentDbStatistic.setName("hello");
-        componentDbStatistic.getUpdater().set("name", componentDbStatistic.getName());
+        componentDbStatistic.getUpdater().setDirty("name", componentDbStatistic.getName());
         final CompletableFuture<UpdateResult> future = dbDataMongoTemplate.updateFirstAsync(componentDbStatistic);
         final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
 
