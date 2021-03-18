@@ -3,16 +3,16 @@ package org.gamedo.persistence.core;
 import com.mongodb.client.result.UpdateResult;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.Document;
 import org.gamedo.persistence.db.DbData;
 import org.gamedo.persistence.db.SynchronizedUpdater;
 import org.gamedo.persistence.db.Updater;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.convert.MongoConverter;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.UpdateDefinition;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -20,7 +20,6 @@ import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
-@EnableAsync
 public class DbDataMongoTemplate {
 
     final MongoTemplate mongoTemplate;
@@ -56,25 +55,31 @@ public class DbDataMongoTemplate {
     }
 
     /**
-     * save a DbData in another thread asynchronously, The caller should ensure the thread-safe issue of the data, such as memory visibility,
-     * race condition on multithreading
+     * save a DbData in another thread asynchronously.
      * @param data the data to be saved.
      * @param <T> the DbData child class
      * @return a CompletableFuture contains the data itself.
      */
-    @Async
     public <T extends DbData> CompletableFuture<T> saveAsync(final T data) {
 
         final String className = data.getClass().getName();
         final String id = data.getId();
         final String mongoDbFieldName = data.getMongoDbFieldName();
 
+        final Document document = new Document();
+        final MongoConverter converter = mongoTemplate.getConverter();
+        //serialize to Document on the caller thread.
+        converter.write(data, document);
+        //deserialize back to DbData
+        @SuppressWarnings("unchecked")
+        final T dbData = (T) converter.read(data.getClass(), document);
+
         return CompletableFuture.supplyAsync(() -> {
 
             if (log.isDebugEnabled()) {
-                log.debug("saveAsync start, class:{}, id:{}, mongoDbFieldName:{}, data:{}", className, id, mongoDbFieldName, data);
+                log.debug("saveAsync start, class:{}, id:{}, mongoDbFieldName:{}, data:{}", className, id, mongoDbFieldName, dbData);
             }
-            final T savedData = mongoTemplate.save(data);
+            final T savedData = mongoTemplate.save(dbData);
             if (log.isDebugEnabled()) {
                 log.debug("saveAsync finish");
             }
@@ -128,7 +133,6 @@ public class DbDataMongoTemplate {
      * @param <T> the DbData child class
      * @return a CompletableFuture contains the UpdateResult.
      */
-    @Async
     public <T extends DbData> CompletableFuture<UpdateResult> updateFirstAsync(final T data) {
 
         final String mongoDbFieldName = data.getMongoDbFieldName();

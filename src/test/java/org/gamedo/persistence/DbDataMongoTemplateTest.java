@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -64,6 +65,28 @@ class DbDataMongoTemplateTest {
         final ComponentDbStatistic componentDbStatistic = entityDbData.getComponentDbData(ComponentDbStatistic.class);
         Assertions.assertNotNull(componentDbStatistic);
         Assertions.assertEquals(DEFAULT_NAME, componentDbStatistic.getName());
+    }
+
+    @Test
+    public void testSave() {
+        mongoTemplate.dropCollection(EntityDbPlayer.class);
+
+        final EntityDbPlayer entityDbData = new EntityDbPlayer(new ObjectId().toString(), null);
+
+        entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
+
+        final EntityDbPlayer entityDbPlayer = Assertions.assertDoesNotThrow(() -> dbDataMongoTemplate.save(entityDbData).get());
+    }
+
+    @Test
+    public void testSaveAsync() {
+        mongoTemplate.dropCollection(EntityDbPlayer.class);
+
+        final EntityDbPlayer entityDbData = new EntityDbPlayer(new ObjectId().toString(), null);
+
+        entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
+
+        final EntityDbPlayer entityDbPlayer = Assertions.assertDoesNotThrow(() -> dbDataMongoTemplate.saveAsync(entityDbData).get());
     }
 
     @Test
@@ -180,6 +203,7 @@ class DbDataMongoTemplateTest {
         mongoTemplate.save(entityDbData);
 
         entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
+        entityDbData.addComponentDbData(new ComponentDbBag(Arrays.asList(1, 2, 3)));
         entityDbData.setAllComponentDbDataDirty();
 
         final CompletableFuture<UpdateResult> future = dbDataMongoTemplate.updateFirst(entityDbData);
