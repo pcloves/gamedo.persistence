@@ -15,7 +15,7 @@ gamedo.persistence是gamedo游戏服务器框架的持久化模块。它底层�
 <dependency>
   <groupId>org.gamedo</groupId>
   <artifactId>persistence</artifactId>
-  <version>1.1.0</version>
+  <version>1.2.0</version>
 </dependency>
 ```
 
