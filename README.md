@@ -168,7 +168,7 @@ public class Application {
 
 在gamedo.persistence的实现中，EntityDbData中含有一个Map<String, ComponentDbData>的成员变量，其中Key为ComponentDbData所代表的java.lang.Class的getSimpleName()返回值，Value为ComponentDbData的子类实现。DbData、EntityDbData、ComponentDbData的继承关系如图所示：
 
-[![6ssys1.png](https://raw.sevencdn.com/pcloves/gamedo.persistence/main/images/gamedo.persistence.DbData-UML.png)](https://imgtu.com/i/6ssys1)
+![gamedo.persistence.DbData-UML.png](https://raw.githubusercontent.com/pcloves/gamedo.persistence/main/images/gamedo.persistence.DbData-UML.png)
 
 ### 高性能：化整为零
 
