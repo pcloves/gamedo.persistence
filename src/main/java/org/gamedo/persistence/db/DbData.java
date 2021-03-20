@@ -54,4 +54,22 @@ public interface DbData {
      * @param updater the new Updater
      */
     void setUpdater(Updater updater);
+
+    /**
+     * mark the key is dirty, and set new value for key
+     * @param key the key to be set.
+     * @param value the new value.
+     */
+    default void setDirty(String key, Object value) {
+        getUpdater().setDirty(key, value);
+    }
+
+    /**
+     * is the DbData clean or dirty(meaning that the method {@linkplain Updater#setDirty(String, Object)} has been called).
+     * @return true if there are one or more keys set once.
+     */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    default boolean isDirty() {
+        return getUpdater().isDirty();
+    }
 }

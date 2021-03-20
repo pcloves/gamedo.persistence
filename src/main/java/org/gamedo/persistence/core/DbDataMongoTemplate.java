@@ -108,7 +108,7 @@ public class DbDataMongoTemplate {
         final String mongoDbFieldName = data.getMongoDbFieldName();
         final String className = clazz.getName();
         final Updater updater = data.getUpdater();
-        if (!updater.isDirty()) {
+        if (!data.isDirty()) {
             log.warn("the updater is not dirty, class:{}, id:{}, mongoDbFieldName:{} updater:{}", className, id, mongoDbFieldName, updater);
             return CompletableFuture.completedFuture(UpdateResult.acknowledged(1, 0L, null));
         }
@@ -140,7 +140,7 @@ public class DbDataMongoTemplate {
         final Class<? extends DbData> clazz = data.getClass();
         final String className = clazz.getName();
         final String id = data.getId();
-        if (!updater.isDirty()) {
+        if (!data.isDirty()) {
             log.warn("the updater is not dirty, class:{}, id:{}, mongoDbFieldName:{}, updater:{}", className, id, mongoDbFieldName, updater);
             return CompletableFuture.completedFuture(UpdateResult.acknowledged(1, 0L, null));
         }
