@@ -21,7 +21,7 @@ gamedo.persistence是gamedo游戏服务器框架的持久化模块。它底层�
 
 ### 使用说明
 
-1. 定义游戏对象数据使之继承自**EntityDbData**，并使用**@Document**注解来指定该持久化对象数据要持久化到MongoDB的哪一个Document中，一般情况下，该类内不再增加新的成员变量，因为数据应该存储在**ComponentDbData**的子类中
+1. 定义游戏对象数据使之继承自**EntityDbData**，并使用 **@Document**注解来指定该持久化对象数据要持久化到MongoDB的哪一个Document中，一般情况下，该类内不再增加新的成员变量，因为数据应该存储在**ComponentDbData**的子类中
 
 ``` java
 @Document("player")
@@ -32,7 +32,7 @@ public class EntityDbPlayer extends EntityDbData {
 }
 ```
 
-2. 定义若干**ComponentDbData**的子类，并使用和**EntityDbPlayer**相同的**@Document**注解，确保被持久化到同一个Document中，同时该类内定义需要持久化的成员变量
+2. 定义若干**ComponentDbData**的子类，并使用和**EntityDbPlayer**相同的 **@Document**注解，确保被持久化到同一个Document中，同时该类内定义需要持久化的成员变量
 
 ``` java
 @EqualsAndHashCode(callSuper = true)
