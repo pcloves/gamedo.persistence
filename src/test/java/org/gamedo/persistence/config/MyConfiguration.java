@@ -1,6 +1,7 @@
 package org.gamedo.persistence.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.gamedo.persistence.GamedoMongoTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
@@ -20,5 +21,10 @@ public class MyConfiguration {
     @Bean
     public MongoTemplate mongoTemplate(final MongoDatabaseFactory databaseFactory, final MongoConverter mongoConverter) {
         return new MongoTemplate(databaseFactory, mongoConverter);
+    }
+
+    @Bean
+    public GamedoMongoTemplate gamedoMongoTemplate(final MongoTemplate mongoTemplate) {
+        return new GamedoMongoTemplate(mongoTemplate);
     }
 }

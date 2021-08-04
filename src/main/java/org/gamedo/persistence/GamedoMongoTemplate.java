@@ -14,14 +14,11 @@ import org.springframework.data.mongodb.core.convert.MongoConverter;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.UpdateDefinition;
-import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 @SuppressWarnings("unused")
-@Component
 @Slf4j
 public class GamedoMongoTemplate implements MongoOperations {
 
@@ -32,10 +29,6 @@ public class GamedoMongoTemplate implements MongoOperations {
 
     public GamedoMongoTemplate(MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
-    }
-
-    @PostConstruct
-    private void init() {
         SynchronizedUpdater.setMongoConverter(mongoTemplate.getConverter());
     }
 
