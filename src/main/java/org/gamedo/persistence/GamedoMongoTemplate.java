@@ -158,10 +158,11 @@ public class GamedoMongoTemplate implements MongoOperations {
      * yet, No query will matched, and won't insert a new document in the MongoDB either. This method has the consistent
      * behavior with {@linkplain MongoTemplate#updateFirst(Query, UpdateDefinition, Class)}
      * @param data the data to be update.
+     * @param executor the operating executor
      * @param <T> the DbData child class
      * @return a CompletableFuture contains the UpdateResult.
      */
-    public <T extends DbData> CompletableFuture<UpdateResult> updateFirstAsyncInner(final T data, final Executor executor) {
+    private  <T extends DbData> CompletableFuture<UpdateResult> updateFirstAsyncInner(final T data, final Executor executor) {
 
         final String mongoDbFieldName = data.getMongoDbFieldName();
         final Updater updater = data.getUpdater();
