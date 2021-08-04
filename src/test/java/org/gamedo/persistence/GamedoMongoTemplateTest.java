@@ -64,7 +64,7 @@ class GamedoMongoTemplateTest {
 
         entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
 
-        final EntityDbPlayer entityDbPlayer = gamedoMongoTemplate.save(entityDbData);
+        gamedoMongoTemplate.save(entityDbData);
     }
 
     @Test
@@ -75,7 +75,7 @@ class GamedoMongoTemplateTest {
 
         entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
 
-        final EntityDbPlayer entityDbPlayer = Assertions.assertDoesNotThrow(() -> gamedoMongoTemplate.saveAsync(entityDbData).get());
+        Assertions.assertDoesNotThrow(() -> gamedoMongoTemplate.saveAsync(entityDbData).get());
     }
 
     @Test
@@ -88,7 +88,7 @@ class GamedoMongoTemplateTest {
         componentDbStatistic.setName("hello");
         componentDbStatistic.setDirty("name", componentDbStatistic.getName());
 
-        final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateFirst(componentDbStatistic);
+        final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateFirstAsync(componentDbStatistic);
         final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
 
         Assertions.assertEquals(1, updateResult.getModifiedCount());
@@ -132,7 +132,7 @@ class GamedoMongoTemplateTest {
         entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
         entityDbData.setComponentDbDataDirty(ComponentDbStatistic.class);
 
-        final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateFirst(entityDbData);
+        final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateFirstAsync(entityDbData);
         final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
 
         Assertions.assertEquals(0, updateResult.getMatchedCount());
@@ -153,7 +153,7 @@ class GamedoMongoTemplateTest {
         entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
         entityDbData.setAllComponentDbDataDirty();
 
-        final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateFirst(entityDbData);
+        final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateFirstAsync(entityDbData);
         final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
 
         Assertions.assertEquals(0, updateResult.getMatchedCount());
@@ -172,7 +172,7 @@ class GamedoMongoTemplateTest {
         entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
         entityDbData.setComponentDbDataDirty(ComponentDbStatistic.class);
 
-        final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateFirst(entityDbData);
+        final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateFirstAsync(entityDbData);
         final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
 
         Assertions.assertEquals(1, updateResult.getMatchedCount());
@@ -195,7 +195,7 @@ class GamedoMongoTemplateTest {
         entityDbData.addComponentDbData(new ComponentDbBag(Arrays.asList(1, 2, 3)));
         entityDbData.setAllComponentDbDataDirty();
 
-        final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateFirst(entityDbData);
+        final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateFirstAsync(entityDbData);
         final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
 
         Assertions.assertEquals(1, updateResult.getMatchedCount());

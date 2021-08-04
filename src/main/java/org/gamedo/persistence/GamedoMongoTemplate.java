@@ -1,13 +1,13 @@
 package org.gamedo.persistence;
 
 import com.mongodb.client.result.UpdateResult;
-import lombok.SneakyThrows;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.gamedo.persistence.db.DbData;
 import org.gamedo.persistence.db.SynchronizedUpdater;
 import org.gamedo.persistence.db.Updater;
+import org.gamedo.persistence.logging.Markers;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.MongoConverter;
@@ -20,6 +20,7 @@ import javax.annotation.PostConstruct;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+@SuppressWarnings("unused")
 @Component
 @Slf4j
 public class GamedoMongoTemplate implements MongoOperations {
@@ -27,7 +28,7 @@ public class GamedoMongoTemplate implements MongoOperations {
     private static final Executor ASYNC_POOL = new CompletableFuture<Void>().defaultExecutor();
 
     @Delegate(types = MongoOperations.class)
-    final MongoTemplate mongoTemplate;
+    private final MongoTemplate mongoTemplate;
 
     public GamedoMongoTemplate(MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
@@ -63,6 +64,7 @@ public class GamedoMongoTemplate implements MongoOperations {
     private <T extends DbData> CompletableFuture<T> saveAsyncInner(final T data, Executor executor) {
         final String className = data.getClass().getName();
         final String id = data.getId();
+        final int hashCode = data.hashCode();
         final String mongoDbFieldName = data.getMongoDbFieldName();
 
         final Document document = new Document();
@@ -76,56 +78,21 @@ public class GamedoMongoTemplate implements MongoOperations {
         return CompletableFuture.supplyAsync(() -> {
 
             if (log.isDebugEnabled()) {
-                log.debug("saveAsync start, class:{}, id:{}, mongoDbFieldName:{}, data:{}", className, id, mongoDbFieldName, dbData);
+                log.debug(Markers.MongoDB,
+                        "saveAsync start, class:{}, id:{}, mongoDbFieldName:{}, data:({}){}",
+                        className,
+                        id,
+                        mongoDbFieldName,
+                        hashCode,
+                        dbData);
             }
             final T savedData = mongoTemplate.save(dbData);
             if (log.isDebugEnabled()) {
-                log.debug("saveAsync finish");
+                log.debug(Markers.MongoDB, "saveAsync finish, id:{}, hashCode:{}", id, hashCode);
             }
 
             return savedData;
         }, executor);
-    }
-
-    /**
-     * Updates the first DbData that is found in the collection synchronously. <b>Note that:</b>if the data hasn't saved before
-     * yet, No query will matched, and won't insert a new document in the MongoDB either. This method has the consistent
-     * behavior with {@linkplain MongoTemplate#updateFirst(Query, UpdateDefinition, Class)}
-     * @param data the data to be update.
-     * @param <T> the DbData child class
-     * @return a completed CompletableFuture contains the UpdateResult.
-     */
-    @SneakyThrows
-    public <T extends DbData> CompletableFuture<UpdateResult> updateFirst(final T data) {
-
-        final Class<? extends DbData> clazz = data.getClass();
-        final String id = data.getId();
-        if (log.isDebugEnabled()) {
-            log.debug("updateFirst start, class:{}, id:{}, mongoDbFieldName:{}, updater:{}",
-                    clazz.getName(),
-                    id,
-                    data.getMongoDbFieldName(),
-                    data.getUpdater());
-        }
-
-        final String mongoDbFieldName = data.getMongoDbFieldName();
-        final String className = clazz.getName();
-        final Updater updater = data.getUpdater();
-        if (!data.isDirty()) {
-            log.warn("the updater is not dirty, class:{}, id:{}, mongoDbFieldName:{} updater:{}", className, id, mongoDbFieldName, updater);
-            return CompletableFuture.completedFuture(UpdateResult.acknowledged(1, 0L, null));
-        }
-
-        final Query query = new Query(Criteria.where("_id").is(data.getId()));
-        final SynchronizedUpdater updateNew = new SynchronizedUpdater(mongoDbFieldName);
-        data.setUpdater(updateNew);
-
-        final UpdateResult updateResult = mongoTemplate.updateFirst(query, updater, clazz);
-        if (log.isDebugEnabled()) {
-            log.debug("updateFirst finish, result:{}", updateResult);
-        }
-
-        return CompletableFuture.completedFuture(updateResult);
     }
 
     /**
@@ -166,16 +133,18 @@ public class GamedoMongoTemplate implements MongoOperations {
 
         final String mongoDbFieldName = data.getMongoDbFieldName();
         final Updater updater = data.getUpdater();
+        final int hashCode = updater.hashCode();
         final Class<? extends DbData> clazz = data.getClass();
         final String className = clazz.getName();
         final String id = data.getId();
         if (!data.isDirty()) {
-            log.warn("the updater is not dirty, class:{}, id:{}, mongoDbFieldName:{}, updater:{}",
+            log.warn(Markers.MongoDB, "the updater is not dirty, class:{}, id:{}, hashCode:{}, mongoDbFieldName:{}, updater:{}",
                     className,
                     id,
+                    hashCode,
                     mongoDbFieldName,
                     updater);
-            return CompletableFuture.completedFuture(UpdateResult.acknowledged(1,
+            return CompletableFuture.completedFuture(UpdateResult.acknowledged(0,
                     0L,
                     null));
         }
@@ -188,7 +157,7 @@ public class GamedoMongoTemplate implements MongoOperations {
         return CompletableFuture.supplyAsync(() -> {
             synchronized (updater) {
                 if (log.isDebugEnabled()) {
-                    log.debug("updateFirstAsync start, class:{}, id:{}, mongoDbFieldName:{} updater:{}",
+                    log.debug(Markers.MongoDB, "updateFirstAsync start, class:{}, id:{}, mongoDbFieldName:{} updater:{}",
                             className,
                             id,
                             mongoDbFieldName,
@@ -196,7 +165,11 @@ public class GamedoMongoTemplate implements MongoOperations {
                 }
                 final UpdateResult updateResult = mongoTemplate.updateFirst(query, updater, clazz);
                 if (log.isDebugEnabled()) {
-                    log.debug("updateFirstAsync finish, result:{}", updateResult);
+                    log.debug(Markers.MongoDB,
+                            "updateFirstAsync finish, id:{}, hashCode:{}, result:{}",
+                            id,
+                            hashCode,
+                            updateResult);
                 }
                 return updateResult;
             }

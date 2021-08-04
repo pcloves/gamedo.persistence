@@ -6,6 +6,7 @@ import org.gamedo.persistence.annotations.ComponentMap;
 import org.gamedo.persistence.config.MongoConfiguration;
 import org.gamedo.persistence.db.ComponentDbData;
 import org.gamedo.persistence.db.EntityDbData;
+import org.gamedo.persistence.logging.Markers;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper;
 import org.springframework.data.mongodb.core.convert.MongoConverter;
@@ -35,7 +36,10 @@ public abstract class AbstractEntityDbDataReadingConverter<T extends EntityDbDat
             //the EntityDbData.componentsDbDataMap has been unwrapped to key-value style when writing,
             // there shouldn't be a field with the same name.
             if (source.containsKey(componentsMapFieldName)) {
-                log.error("the document should not contains field:{}, source:{}", componentsMapFieldName, source);
+                log.error(Markers.MongoDB,
+                        "the document should not contains field:{}, source:{}",
+                        componentsMapFieldName,
+                        source);
                 return null;
             }
 
@@ -45,7 +49,7 @@ public abstract class AbstractEntityDbDataReadingConverter<T extends EntityDbDat
 
             //check whether the source class is valid.
             if (!EntityDbData.class.isAssignableFrom(clazz)) {
-                log.error("invalid class:{}, source:{}", clazz, source);
+                log.error(Markers.MongoDB, "invalid class:{}, source:{}", clazz, source);
                 return null;
             }
 
@@ -66,12 +70,12 @@ public abstract class AbstractEntityDbDataReadingConverter<T extends EntityDbDat
             final Object entityDbData = mongoConverter.read(clazz, source);
 
             if (log.isDebugEnabled()) {
-                log.debug("reading convert finish, source:{}, target:{}", source, entityDbData);
+                log.debug(Markers.MongoDB, "reading convert finish, source:{}, target:{}", source, entityDbData);
             }
 
             return (T) entityDbData;
         } catch (Exception e) {
-            log.error("exception caught on reading document:" + source, e);
+            log.error(Markers.MongoDB, "exception caught on reading document:" + source, e);
 
             return null;
         }
@@ -96,6 +100,7 @@ public abstract class AbstractEntityDbDataReadingConverter<T extends EntityDbDat
 
             return ComponentDbData.class.isAssignableFrom(clazz);
         } catch (ClassNotFoundException e) {
+            log.error(Markers.MongoDB, "class not found, object:" + object, e);
             return false;
         }
     }

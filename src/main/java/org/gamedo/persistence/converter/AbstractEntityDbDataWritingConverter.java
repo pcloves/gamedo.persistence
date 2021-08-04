@@ -5,6 +5,7 @@ import org.bson.Document;
 import org.gamedo.persistence.annotations.ComponentMap;
 import org.gamedo.persistence.config.MongoConfiguration;
 import org.gamedo.persistence.db.EntityDbData;
+import org.gamedo.persistence.logging.Markers;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mongodb.core.convert.MongoConverter;
 import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;
@@ -38,10 +39,10 @@ public abstract class AbstractEntityDbDataWritingConverter<T extends EntityDbDat
             componentsMap.forEach(document::put);
 
             if (log.isDebugEnabled()) {
-                log.debug("writing convert finish, source:{}, target:{}", source, document);
+                log.debug(Markers.MongoDB, "writing convert finish, source:{}, target:{}", source, document);
             }
         } catch (Exception e) {
-            log.error("exception caught, EntityDbData:" + source, e);
+            log.error(Markers.MongoDB, "exception caught, EntityDbData:" + source, e);
         }
 
         return document;
