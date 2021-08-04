@@ -5,6 +5,7 @@ import org.gamedo.persistence.db.EntityDbData;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.stereotype.Component;
 
+@SuppressWarnings("unused")
 @Component
 @WritingConverter
 public class EntityDbDataWritingConverter extends AbstractEntityDbDataWritingConverter<EntityDbData> {

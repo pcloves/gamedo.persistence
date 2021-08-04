@@ -4,7 +4,6 @@ import com.mongodb.client.result.UpdateResult;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.gamedo.persistence.config.MyConfiguration;
-import org.gamedo.persistence.core.DbDataMongoTemplate;
 import org.gamedo.persistence.db.ComponentDbBag;
 import org.gamedo.persistence.db.ComponentDbStatistic;
 import org.gamedo.persistence.db.EntityDbPlayer;
@@ -15,49 +14,39 @@ import org.junit.jupiter.api.function.ThrowingSupplier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
-@SpringBootTest(classes = {MyConfiguration.class})
+@SpringBootTest(classes = MyConfiguration.class)
 @SpringBootApplication
-class DbDataMongoTemplateTest {
+class GamedoMongoTemplateTest {
 
     public static final String DEFAULT_NAME = "test";
-    final MongoTemplate mongoTemplate;
-    final DbDataMongoTemplate dbDataMongoTemplate;
+    final GamedoMongoTemplate gamedoMongoTemplate;
 
     @Autowired
-    DbDataMongoTemplateTest(MongoTemplate mongoTemplate, DbDataMongoTemplate dbDataMongoTemplate) {
-        this.mongoTemplate = mongoTemplate;
-        this.dbDataMongoTemplate = dbDataMongoTemplate;
+    GamedoMongoTemplateTest(GamedoMongoTemplate gamedoMongoTemplate) {
+        this.gamedoMongoTemplate = gamedoMongoTemplate;
     }
 
     @BeforeEach
     public void beforeEach() {
 
-        mongoTemplate.dropCollection(EntityDbPlayer.class);
+        gamedoMongoTemplate.dropCollection(EntityDbPlayer.class);
 
         final EntityDbPlayer entityDbPlayer = new EntityDbPlayer(new ObjectId().toString(), null);
         entityDbPlayer.addComponentDbData(new ComponentDbBag(null));
         entityDbPlayer.addComponentDbData(new ComponentDbStatistic(DEFAULT_NAME));
 
-        final CompletableFuture<EntityDbPlayer> future = dbDataMongoTemplate.save(entityDbPlayer);
-        future.whenComplete((player, throwable) -> {
-            if (throwable != null) {
-                log.error("exception caught.", throwable);
-            } else {
-                log.info("save finish, player:{}", player);
-            }
-        });
+        gamedoMongoTemplate.save(entityDbPlayer);
     }
 
     @Test
     public void testFindAll() {
-        final List<EntityDbPlayer> entityDbPlayerList = mongoTemplate.findAll(EntityDbPlayer.class);
+        final List<EntityDbPlayer> entityDbPlayerList = gamedoMongoTemplate.findAll(EntityDbPlayer.class);
 
         Assertions.assertEquals(entityDbPlayerList.size(), 1);
 
@@ -69,29 +58,29 @@ class DbDataMongoTemplateTest {
 
     @Test
     public void testSave() {
-        mongoTemplate.dropCollection(EntityDbPlayer.class);
+        gamedoMongoTemplate.dropCollection(EntityDbPlayer.class);
 
         final EntityDbPlayer entityDbData = new EntityDbPlayer(new ObjectId().toString(), null);
 
         entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
 
-        final EntityDbPlayer entityDbPlayer = Assertions.assertDoesNotThrow(() -> dbDataMongoTemplate.save(entityDbData).get());
+        final EntityDbPlayer entityDbPlayer = gamedoMongoTemplate.save(entityDbData);
     }
 
     @Test
     public void testSaveAsync() {
-        mongoTemplate.dropCollection(EntityDbPlayer.class);
+        gamedoMongoTemplate.dropCollection(EntityDbPlayer.class);
 
         final EntityDbPlayer entityDbData = new EntityDbPlayer(new ObjectId().toString(), null);
 
         entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
 
-        final EntityDbPlayer entityDbPlayer = Assertions.assertDoesNotThrow(() -> dbDataMongoTemplate.saveAsync(entityDbData).get());
+        final EntityDbPlayer entityDbPlayer = Assertions.assertDoesNotThrow(() -> gamedoMongoTemplate.saveAsync(entityDbData).get());
     }
 
     @Test
     public void testUpsert() {
-        final List<EntityDbPlayer> entityDbPlayerList = mongoTemplate.findAll(EntityDbPlayer.class);
+        final List<EntityDbPlayer> entityDbPlayerList = gamedoMongoTemplate.findAll(EntityDbPlayer.class);
 
         final EntityDbPlayer entityDbData = entityDbPlayerList.get(0);
         final ComponentDbStatistic componentDbStatistic = entityDbData.getComponentDbData(ComponentDbStatistic.class);
@@ -99,14 +88,14 @@ class DbDataMongoTemplateTest {
         componentDbStatistic.setName("hello");
         componentDbStatistic.setDirty("name", componentDbStatistic.getName());
 
-        final CompletableFuture<UpdateResult> future = dbDataMongoTemplate.updateFirst(componentDbStatistic);
+        final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateFirst(componentDbStatistic);
         final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
 
         Assertions.assertEquals(1, updateResult.getModifiedCount());
         Assertions.assertEquals(1, updateResult.getModifiedCount());
         Assertions.assertNull(updateResult.getUpsertedId());
 
-        final List<EntityDbPlayer> entityDbPlayerList1 = mongoTemplate.findAll(EntityDbPlayer.class);
+        final List<EntityDbPlayer> entityDbPlayerList1 = gamedoMongoTemplate.findAll(EntityDbPlayer.class);
         Assertions.assertEquals(entityDbPlayerList1.size(), 1);
 
         final EntityDbPlayer entityDbData1 = entityDbPlayerList1.get(0);
@@ -119,14 +108,14 @@ class DbDataMongoTemplateTest {
     @Test
     public void testUpsertAsync()
     {
-        final List<EntityDbPlayer> entityDbPlayerList = mongoTemplate.findAll(EntityDbPlayer.class);
+        final List<EntityDbPlayer> entityDbPlayerList = gamedoMongoTemplate.findAll(EntityDbPlayer.class);
 
         final EntityDbPlayer entityDbData = entityDbPlayerList.get(0);
         final ComponentDbStatistic componentDbStatistic = entityDbData.getComponentDbData(ComponentDbStatistic.class);
 
         componentDbStatistic.setName("hello");
         componentDbStatistic.setDirty("name", componentDbStatistic.getName());
-        final CompletableFuture<UpdateResult> future = dbDataMongoTemplate.updateFirstAsync(componentDbStatistic);
+        final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateFirstAsync(componentDbStatistic);
         final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
 
         Assertions.assertEquals(1, updateResult.getMatchedCount());
@@ -136,35 +125,35 @@ class DbDataMongoTemplateTest {
     @Test
     public void testUpsertComponentDbDataWithoutSave() {
 
-        mongoTemplate.dropCollection(EntityDbPlayer.class);
+        gamedoMongoTemplate.dropCollection(EntityDbPlayer.class);
 
         final EntityDbPlayer entityDbData = new EntityDbPlayer(new ObjectId().toString(), null);
 
         entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
         entityDbData.setComponentDbDataDirty(ComponentDbStatistic.class);
 
-        final CompletableFuture<UpdateResult> future = dbDataMongoTemplate.updateFirst(entityDbData);
+        final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateFirst(entityDbData);
         final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
 
         Assertions.assertEquals(0, updateResult.getMatchedCount());
         Assertions.assertEquals(0, updateResult.getModifiedCount());
         Assertions.assertNull(updateResult.getUpsertedId());
 
-        final List<EntityDbPlayer> entityDbPlayerList = mongoTemplate.findAll(EntityDbPlayer.class);
+        final List<EntityDbPlayer> entityDbPlayerList = gamedoMongoTemplate.findAll(EntityDbPlayer.class);
         Assertions.assertEquals(0, entityDbPlayerList.size());
     }
 
     @Test
     public void testUpsertAllComponentDbDataWithoutSave() {
 
-        mongoTemplate.dropCollection(EntityDbPlayer.class);
+        gamedoMongoTemplate.dropCollection(EntityDbPlayer.class);
 
         final EntityDbPlayer entityDbData = new EntityDbPlayer(new ObjectId().toString(), null);
 
         entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
         entityDbData.setAllComponentDbDataDirty();
 
-        final CompletableFuture<UpdateResult> future = dbDataMongoTemplate.updateFirst(entityDbData);
+        final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateFirst(entityDbData);
         final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
 
         Assertions.assertEquals(0, updateResult.getMatchedCount());
@@ -175,45 +164,45 @@ class DbDataMongoTemplateTest {
     @Test
     public void testUpsertComponentDbData() {
 
-        mongoTemplate.dropCollection(EntityDbPlayer.class);
+        gamedoMongoTemplate.dropCollection(EntityDbPlayer.class);
 
         final EntityDbPlayer entityDbData = new EntityDbPlayer(new ObjectId().toString(), null);
-        mongoTemplate.save(entityDbData);
+        gamedoMongoTemplate.save(entityDbData);
 
         entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
         entityDbData.setComponentDbDataDirty(ComponentDbStatistic.class);
 
-        final CompletableFuture<UpdateResult> future = dbDataMongoTemplate.updateFirst(entityDbData);
+        final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateFirst(entityDbData);
         final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
 
         Assertions.assertEquals(1, updateResult.getMatchedCount());
         Assertions.assertEquals(1, updateResult.getModifiedCount());
         Assertions.assertNull(updateResult.getUpsertedId());
 
-        final List<EntityDbPlayer> entityDbPlayerList = mongoTemplate.findAll(EntityDbPlayer.class);
+        final List<EntityDbPlayer> entityDbPlayerList = gamedoMongoTemplate.findAll(EntityDbPlayer.class);
         Assertions.assertEquals(1, entityDbPlayerList.size());
     }
 
     @Test
     public void testUpsertAllComponentDbData() {
 
-        mongoTemplate.dropCollection(EntityDbPlayer.class);
+        gamedoMongoTemplate.dropCollection(EntityDbPlayer.class);
 
         final EntityDbPlayer entityDbData = new EntityDbPlayer(new ObjectId().toString(), null);
-        mongoTemplate.save(entityDbData);
+        gamedoMongoTemplate.save(entityDbData);
 
         entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
         entityDbData.addComponentDbData(new ComponentDbBag(Arrays.asList(1, 2, 3)));
         entityDbData.setAllComponentDbDataDirty();
 
-        final CompletableFuture<UpdateResult> future = dbDataMongoTemplate.updateFirst(entityDbData);
+        final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateFirst(entityDbData);
         final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
 
         Assertions.assertEquals(1, updateResult.getMatchedCount());
         Assertions.assertEquals(1, updateResult.getModifiedCount());
         Assertions.assertNull(updateResult.getUpsertedId());
 
-        final List<EntityDbPlayer> entityDbPlayerList = mongoTemplate.findAll(EntityDbPlayer.class);
+        final List<EntityDbPlayer> entityDbPlayerList = gamedoMongoTemplate.findAll(EntityDbPlayer.class);
         Assertions.assertEquals(1, entityDbPlayerList.size());
     }
 }

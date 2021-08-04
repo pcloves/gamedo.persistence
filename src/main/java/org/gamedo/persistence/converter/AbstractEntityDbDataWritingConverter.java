@@ -16,14 +16,14 @@ public abstract class AbstractEntityDbDataWritingConverter<T extends EntityDbDat
     private final MongoConverter mongoConverter;
     private final String componentsMapFieldName;
 
-    public AbstractEntityDbDataWritingConverter(final MongoConfiguration configuration) {
-        this.mongoConverter = configuration.getMongoConverter();
+    protected AbstractEntityDbDataWritingConverter(final MongoConfiguration configuration) {
+        mongoConverter = configuration.getMongoConverter();
 
         final MongoPersistentEntity<?> entity = mongoConverter.getMappingContext().getPersistentEntity(EntityDbData.class);
         final MongoPersistentProperty property = entity.getPersistentProperty(ComponentMap.class);
 
         //get the persistent field name.
-        this.componentsMapFieldName = property.getFieldName();
+        componentsMapFieldName = property.getFieldName();
     }
 
     @Override

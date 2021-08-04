@@ -1,13 +1,14 @@
-package org.gamedo.persistence.core;
+package org.gamedo.persistence;
 
 import com.mongodb.client.result.UpdateResult;
 import lombok.SneakyThrows;
+import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.gamedo.persistence.db.DbData;
 import org.gamedo.persistence.db.SynchronizedUpdater;
 import org.gamedo.persistence.db.Updater;
-import org.springframework.core.task.TaskExecutor;
+import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.MongoConverter;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -17,41 +18,24 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 @Component
 @Slf4j
-public class DbDataMongoTemplate {
+public class GamedoMongoTemplate implements MongoOperations {
 
+    private static final Executor ASYNC_POOL = new CompletableFuture<Void>().defaultExecutor();
+
+    @Delegate(types = MongoOperations.class)
     final MongoTemplate mongoTemplate;
-    final TaskExecutor taskExecutor;
 
-    public DbDataMongoTemplate(MongoTemplate mongoTemplate, TaskExecutor taskExecutor) {
+    public GamedoMongoTemplate(MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
-        this.taskExecutor = taskExecutor;
     }
 
     @PostConstruct
     private void init() {
-        SynchronizedUpdater.setCONVERTER(mongoTemplate.getConverter());
-    }
-
-    /**
-     * save a DbData in the caller thread
-     * @param data the data to be saved.
-     * @param <T> the DbData child class
-     * @return a completed CompletableFuture contains the data itself.
-     */
-    public <T extends DbData> CompletableFuture<T> save(final T data) {
-
-        if (log.isDebugEnabled()) {
-            log.debug("save start, class:{}, id:{}, mongoDbFieldName:{}, data:{}", data.getClass().getName(), data.getId(), data.getMongoDbFieldName(), data);
-        }
-        final T save = mongoTemplate.save(data);
-        if (log.isDebugEnabled()) {
-            log.debug("save finish");
-        }
-
-        return CompletableFuture.completedFuture(save);
+        SynchronizedUpdater.setMongoConverter(mongoTemplate.getConverter());
     }
 
     /**
@@ -61,7 +45,22 @@ public class DbDataMongoTemplate {
      * @return a CompletableFuture contains the data itself.
      */
     public <T extends DbData> CompletableFuture<T> saveAsync(final T data) {
+        return saveAsyncInner(data, ASYNC_POOL);
+    }
 
+    /**
+     * save a DbData in another thread asynchronously.
+     * @param data the data to be saved.
+     * @param executor the operating executor
+     * @param <T> the DbData child class
+     * @return a CompletableFuture contains the data itself.
+     */
+
+    public <T extends DbData> CompletableFuture<T> saveAsync(final T data, final Executor executor) {
+        return saveAsyncInner(data, executor);
+    }
+
+    private <T extends DbData> CompletableFuture<T> saveAsyncInner(final T data, Executor executor) {
         final String className = data.getClass().getName();
         final String id = data.getId();
         final String mongoDbFieldName = data.getMongoDbFieldName();
@@ -85,7 +84,7 @@ public class DbDataMongoTemplate {
             }
 
             return savedData;
-        }, taskExecutor);
+        }, executor);
     }
 
     /**
@@ -102,7 +101,11 @@ public class DbDataMongoTemplate {
         final Class<? extends DbData> clazz = data.getClass();
         final String id = data.getId();
         if (log.isDebugEnabled()) {
-            log.debug("updateFirst start, class:{}, id:{}, mongoDbFieldName:{}, updater:{}", clazz.getName(), id, data.getMongoDbFieldName(), data.getUpdater());
+            log.debug("updateFirst start, class:{}, id:{}, mongoDbFieldName:{}, updater:{}",
+                    clazz.getName(),
+                    id,
+                    data.getMongoDbFieldName(),
+                    data.getUpdater());
         }
 
         final String mongoDbFieldName = data.getMongoDbFieldName();
@@ -117,7 +120,7 @@ public class DbDataMongoTemplate {
         final SynchronizedUpdater updateNew = new SynchronizedUpdater(mongoDbFieldName);
         data.setUpdater(updateNew);
 
-        final UpdateResult updateResult = this.mongoTemplate.updateFirst(query, updater, clazz);
+        final UpdateResult updateResult = mongoTemplate.updateFirst(query, updater, clazz);
         if (log.isDebugEnabled()) {
             log.debug("updateFirst finish, result:{}", updateResult);
         }
@@ -134,6 +137,31 @@ public class DbDataMongoTemplate {
      * @return a CompletableFuture contains the UpdateResult.
      */
     public <T extends DbData> CompletableFuture<UpdateResult> updateFirstAsync(final T data) {
+        return updateFirstAsyncInner(data, ASYNC_POOL);
+    }
+
+    /**
+     * Updates the first DbData that is found in the collection asynchronously. <b>Note that:</b>if the data hasn't saved before
+     * yet, No query will matched, and won't insert a new document in the MongoDB either. This method has the consistent
+     * behavior with {@linkplain MongoTemplate#updateFirst(Query, UpdateDefinition, Class)}
+     * @param data the data to be update.
+     * @param executor the operating executor
+     * @param <T> the DbData child class
+     * @return a CompletableFuture contains the UpdateResult.
+     */
+    public <T extends DbData> CompletableFuture<UpdateResult> updateFirstAsync(final T data, Executor executor) {
+        return updateFirstAsyncInner(data, executor);
+    }
+
+    /**
+     * Updates the first DbData that is found in the collection asynchronously. <b>Note that:</b>if the data hasn't saved before
+     * yet, No query will matched, and won't insert a new document in the MongoDB either. This method has the consistent
+     * behavior with {@linkplain MongoTemplate#updateFirst(Query, UpdateDefinition, Class)}
+     * @param data the data to be update.
+     * @param <T> the DbData child class
+     * @return a CompletableFuture contains the UpdateResult.
+     */
+    public <T extends DbData> CompletableFuture<UpdateResult> updateFirstAsyncInner(final T data, final Executor executor) {
 
         final String mongoDbFieldName = data.getMongoDbFieldName();
         final Updater updater = data.getUpdater();
@@ -141,8 +169,14 @@ public class DbDataMongoTemplate {
         final String className = clazz.getName();
         final String id = data.getId();
         if (!data.isDirty()) {
-            log.warn("the updater is not dirty, class:{}, id:{}, mongoDbFieldName:{}, updater:{}", className, id, mongoDbFieldName, updater);
-            return CompletableFuture.completedFuture(UpdateResult.acknowledged(1, 0L, null));
+            log.warn("the updater is not dirty, class:{}, id:{}, mongoDbFieldName:{}, updater:{}",
+                    className,
+                    id,
+                    mongoDbFieldName,
+                    updater);
+            return CompletableFuture.completedFuture(UpdateResult.acknowledged(1,
+                    0L,
+                    null));
         }
 
         final Query query = new Query(Criteria.where("_id").is(id));
@@ -153,14 +187,18 @@ public class DbDataMongoTemplate {
         return CompletableFuture.supplyAsync(() -> {
             synchronized (updater) {
                 if (log.isDebugEnabled()) {
-                    log.debug("updateFirstAsync start, class:{}, id:{}, mongoDbFieldName:{} updater:{}", className, id, mongoDbFieldName, updater);
+                    log.debug("updateFirstAsync start, class:{}, id:{}, mongoDbFieldName:{} updater:{}",
+                            className,
+                            id,
+                            mongoDbFieldName,
+                            updater);
                 }
-                final UpdateResult updateResult = this.mongoTemplate.updateFirst(query, updater, clazz);
+                final UpdateResult updateResult = mongoTemplate.updateFirst(query, updater, clazz);
                 if (log.isDebugEnabled()) {
                     log.debug("updateFirstAsync finish, result:{}", updateResult);
                 }
                 return updateResult;
             }
-        }, taskExecutor);
+        }, executor);
     }
 }

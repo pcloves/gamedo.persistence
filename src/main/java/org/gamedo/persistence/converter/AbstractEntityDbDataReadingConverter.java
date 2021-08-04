@@ -18,13 +18,13 @@ public abstract class AbstractEntityDbDataReadingConverter<T extends EntityDbDat
     private final MongoConverter mongoConverter;
     private final String componentsMapFieldName;
 
-    public AbstractEntityDbDataReadingConverter(final MongoConfiguration configuration) {
-        this.mongoConverter = configuration.getMongoConverter();
+    protected AbstractEntityDbDataReadingConverter(final MongoConfiguration configuration) {
+        mongoConverter = configuration.getMongoConverter();
 
         final MongoPersistentEntity<?> entity = mongoConverter.getMappingContext().getPersistentEntity(EntityDbData.class);
         final MongoPersistentProperty property = entity.getPersistentProperty(ComponentMap.class);
 
-        this.componentsMapFieldName = property.getFieldName();
+        componentsMapFieldName = property.getFieldName();
     }
 
     @Override
@@ -83,7 +83,7 @@ public abstract class AbstractEntityDbDataReadingConverter<T extends EntityDbDat
      * @param object the object to be check.
      * @return true the object's is a sub class of ComponentDbData
      */
-    private boolean isComponentDbData(final Object object) {
+    private static boolean isComponentDbData(final Object object) {
         try {
 
             if (!(object instanceof Document)) {

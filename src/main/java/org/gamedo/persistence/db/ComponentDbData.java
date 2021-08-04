@@ -24,11 +24,11 @@ public abstract class ComponentDbData implements DbData {
     @Transient
     private final String mongoDbFieldName;
 
-    public ComponentDbData() {
+    protected ComponentDbData() {
         //We use the class's simple name as the field name.
         final Class<? extends ComponentDbData> clazz = getClass();
-        this.mongoDbFieldName = clazz.getSimpleName();
-        this.updater = new SynchronizedUpdater(getMongoDbFieldName());
+        mongoDbFieldName = clazz.getSimpleName();
+        updater = new SynchronizedUpdater(getMongoDbFieldName());
     }
 
     @Override
@@ -38,7 +38,7 @@ public abstract class ComponentDbData implements DbData {
 
     @Override
     public void setUpdater(Updater update) {
-        this.updater = update;
+        updater = update;
     }
 
     @Override

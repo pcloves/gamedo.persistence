@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@SuppressWarnings("unused")
 @Getter
 @Setter
 @ToString
@@ -39,34 +40,35 @@ public class EntityDbData implements DbData {
     public EntityDbData(final String id, final Map<String, ComponentDbData> componentDbDataMap) {
         this.id = id == null ? new ObjectId().toString() : id;
         this.componentDbDataMap = new ConcurrentHashMap<>(componentDbDataMap == null ? Collections.emptyMap() : componentDbDataMap);
-        this.updater = new SynchronizedUpdater(getMongoDbFieldName());
-        this.componentDbDataMap.forEach((s, dbData) -> dbData.setId(EntityDbData.this.id));
+        updater = new SynchronizedUpdater(getMongoDbFieldName());
+        this.componentDbDataMap.forEach((s, dbData) -> dbData.setId(this.id));
     }
 
     @SuppressWarnings("unchecked")
     public <T extends ComponentDbData> T addComponentDbData(final T dbData) {
 
         final String idThat = dbData.getId();
-        if (idThat != null && !idThat.equals(this.id)) {
-            throw new RuntimeException("the dbData has belong to another EntityDbData, this id:" + this.id + ", that id:" + idThat + ", dbData:" + dbData);
+        if (idThat != null && !idThat.equals(id)) {
+            throw new RuntimeException("the dbData has belong to another EntityDbData, this id:" + id +
+                    ", that id:" + idThat + ", dbData:" + dbData);
         }
 
-        dbData.setId(this.id);
+        dbData.setId(id);
 
-        return (T) this.componentDbDataMap.put(dbData.getClass().getSimpleName(), dbData);
+        return (T) componentDbDataMap.put(dbData.getClass().getSimpleName(), dbData);
     }
 
     @SuppressWarnings("unchecked")
     public <T extends ComponentDbData> T getComponentDbData(final Class<T> dbData) {
         try {
-            return (T) this.componentDbDataMap.get(dbData.getSimpleName());
+            return (T) componentDbDataMap.get(dbData.getSimpleName());
         } catch (Exception e) {
             return null;
         }
     }
 
     public <T extends ComponentDbData> boolean hasComponentDbData(final Class<T> dbData) {
-        return this.componentDbDataMap.containsKey(dbData.getSimpleName());
+        return componentDbDataMap.containsKey(dbData.getSimpleName());
     }
 
     @Override
@@ -86,14 +88,14 @@ public class EntityDbData implements DbData {
 
     @Override
     public void setUpdater(Updater update) {
-        this.updater = update;
+        updater = update;
     }
 
     /**
      * set all componentDbData dirty
      */
     public void setAllComponentDbDataDirty() {
-        componentDbDataMap.forEach((key, componentDbData) -> this.updater.setDirty(key, componentDbData));
+        componentDbDataMap.forEach((key, componentDbData) -> updater.setDirty(key, componentDbData));
     }
 
     /**
@@ -110,7 +112,7 @@ public class EntityDbData implements DbData {
             return false;
         }
 
-        this.updater.setDirty(key, componentDbData);
+        updater.setDirty(key, componentDbData);
         return true;
     }
 }

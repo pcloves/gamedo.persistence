@@ -21,21 +21,20 @@ public class SynchronizedUpdater implements Updater
 {
     private static final String MAP_HOLDER = "MAP_HOLDER";
     @Setter
-    private static MongoConverter CONVERTER = null;
+    private static volatile MongoConverter mongoConverter;
     private final String keyPrefix;
-    private boolean isDirty = false;
+    private boolean isDirty;
     private final Update update;
     @SuppressWarnings("unused")
     private final Object lock;
 
     public SynchronizedUpdater(final String keyPrefix) {
-        super();
-        this.keyPrefix = (keyPrefix != null && keyPrefix.length() > 0) ? keyPrefix + "." : "";
-        this.update = new Update();
-        this.lock = this;
+        this.keyPrefix = keyPrefix != null && keyPrefix.length() > 0 ? keyPrefix + '.' : "";
+        update = new Update();
+        lock = this;
     }
 
-    private Object convert(final Object value) {
+    private static Object convert(final Object value) {
         if (SimpleTypeHolder.DEFAULT.isSimpleType(value.getClass())) {
             return value;
         }
@@ -47,14 +46,15 @@ public class SynchronizedUpdater implements Updater
             //We use a trick to bypass it.
             final Map<String, Object> map = Collections.singletonMap(MAP_HOLDER, value);
 
-            CONVERTER.write(map, document);
+            mongoConverter.write(map, document);
             return document.get(MAP_HOLDER);
         } else {
-            CONVERTER.write(value, document);
+            mongoConverter.write(value, document);
             return document;
         }
     }
 
+    @Override
     @Synchronized("lock")
     public void setDirty(final String key, final Object value) {
         update.set(keyPrefix + key, convert(value));

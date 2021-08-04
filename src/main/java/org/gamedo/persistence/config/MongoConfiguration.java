@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import java.util.Arrays;
 import java.util.Collections;
 
+@SuppressWarnings("SpringFacetCodeInspection")
 @Configuration
 public class MongoConfiguration {
 
@@ -19,7 +20,7 @@ public class MongoConfiguration {
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public MongoConfiguration(final MongoDatabaseFactory factory) {
-        this.mongoConverter = mongoConverter(factory);
+        mongoConverter = mongoConverter(factory);
     }
 
     /**
@@ -28,7 +29,7 @@ public class MongoConfiguration {
      * @param factory the MongoDatabaseFactory
      * @return MongoConverter
      */
-    private MongoConverter mongoConverter(final MongoDatabaseFactory factory) {
+    private static MongoConverter mongoConverter(final MongoDatabaseFactory factory) {
         DbRefResolver dbRefResolver = new DefaultDbRefResolver(factory);
         MongoCustomConversions conversions = new MongoCustomConversions(Collections.emptyList());
 
