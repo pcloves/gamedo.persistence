@@ -10,14 +10,16 @@
     </parent>
 
     <artifactId>gamedo-persistence-parent</artifactId>
-    <version>1.3.0-SNAPSHOT</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <properties>
-        <revision>1.2.4</revision>
+        <revision>1.3.0-SNAPSHOT</revision>
     </properties>
 
     <modules>
         <module>gamedo-persistence</module>
+        <module>gamedo-persistence-lombok-unshaded</module>
+        <module>gamedo-persistence-lombok</module>
     </modules>
 </project>
