@@ -11,6 +11,8 @@ import org.springframework.data.mongodb.core.convert.MongoConverter;
 import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;
 import org.springframework.data.mongodb.core.mapping.MongoPersistentProperty;
 
+import java.util.Objects;
+
 @Slf4j
 public abstract class AbstractEntityDbDataWritingConverter<T extends EntityDbData> implements Converter<T, Document> {
 
@@ -21,10 +23,10 @@ public abstract class AbstractEntityDbDataWritingConverter<T extends EntityDbDat
         mongoConverter = configuration.getMongoConverter();
 
         final MongoPersistentEntity<?> entity = mongoConverter.getMappingContext().getPersistentEntity(EntityDbData.class);
-        final MongoPersistentProperty property = entity.getPersistentProperty(ComponentMap.class);
+        final MongoPersistentProperty property = Objects.requireNonNull(entity).getPersistentProperty(ComponentMap.class);
 
         //get the persistent field name.
-        componentsMapFieldName = property.getFieldName();
+        componentsMapFieldName = Objects.requireNonNull(property).getFieldName();
     }
 
     @Override
@@ -36,7 +38,7 @@ public abstract class AbstractEntityDbDataWritingConverter<T extends EntityDbDat
 
             //unwrap the EntityDbData.componentsDbDataMap to key-value style.
             final Document componentsMap = (Document) document.remove(componentsMapFieldName);
-            componentsMap.forEach(document::put);
+            document.putAll(componentsMap);
 
             if (log.isDebugEnabled()) {
                 log.debug(Markers.MongoDB, "writing convert finish, source:{}, target:{}", source, document);

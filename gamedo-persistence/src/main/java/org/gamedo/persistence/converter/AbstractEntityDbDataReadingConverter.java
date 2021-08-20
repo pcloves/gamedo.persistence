@@ -13,6 +13,8 @@ import org.springframework.data.mongodb.core.convert.MongoConverter;
 import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;
 import org.springframework.data.mongodb.core.mapping.MongoPersistentProperty;
 
+import java.util.Objects;
+
 @Slf4j
 public abstract class AbstractEntityDbDataReadingConverter<T extends EntityDbData> implements Converter<Document, T> {
 
@@ -23,9 +25,9 @@ public abstract class AbstractEntityDbDataReadingConverter<T extends EntityDbDat
         mongoConverter = configuration.getMongoConverter();
 
         final MongoPersistentEntity<?> entity = mongoConverter.getMappingContext().getPersistentEntity(EntityDbData.class);
-        final MongoPersistentProperty property = entity.getPersistentProperty(ComponentMap.class);
+        final MongoPersistentProperty property = Objects.requireNonNull(entity).getPersistentProperty(ComponentMap.class);
 
-        componentsMapFieldName = property.getFieldName();
+        componentsMapFieldName = Objects.requireNonNull(property).getFieldName();
     }
 
     @Override

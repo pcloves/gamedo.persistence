@@ -16,7 +16,7 @@ public final class Markers
 
     public static Marker of(String name, Marker ... parents) {
         final Marker marker = MarkerFactory.getMarker(name);
-        Arrays.stream(parents).forEach(parent -> marker.add(parent));
+        Arrays.stream(parents).forEach(marker::add);
         return marker;
     }
 }
