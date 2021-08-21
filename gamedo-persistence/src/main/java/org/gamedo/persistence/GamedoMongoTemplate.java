@@ -34,8 +34,9 @@ public class GamedoMongoTemplate implements MongoOperations {
 
     /**
      * save a DbData in another thread asynchronously.
+     *
      * @param data the data to be saved.
-     * @param <T> the DbData child class
+     * @param <T>  the DbData child class
      * @return a CompletableFuture contains the data itself.
      */
     public <T extends DbData> CompletableFuture<T> saveAsync(final T data) {
@@ -44,9 +45,10 @@ public class GamedoMongoTemplate implements MongoOperations {
 
     /**
      * save a DbData in another thread asynchronously.
-     * @param data the data to be saved.
+     *
+     * @param data     the data to be saved.
      * @param executor the operating executor
-     * @param <T> the DbData child class
+     * @param <T>      the DbData child class
      * @return a CompletableFuture contains the data itself.
      */
 
@@ -65,8 +67,7 @@ public class GamedoMongoTemplate implements MongoOperations {
         //serialize to Document on the caller thread.
         converter.write(data, document);
         //deserialize back to DbData
-        @SuppressWarnings("unchecked")
-        final T dbData = (T) converter.read(data.getClass(), document);
+        @SuppressWarnings("unchecked") final T dbData = (T) converter.read(data.getClass(), document);
 
         return CompletableFuture.supplyAsync(() -> {
 
@@ -92,8 +93,9 @@ public class GamedoMongoTemplate implements MongoOperations {
      * Updates the first DbData that is found in the collection asynchronously. <b>Note that:</b>if the data hasn't saved before
      * yet, No query will matched, and won't insert a new document in the MongoDB either. This method has the consistent
      * behavior with {@linkplain MongoTemplate#updateFirst(Query, UpdateDefinition, Class)}
+     *
      * @param data the data to be update.
-     * @param <T> the DbData child class
+     * @param <T>  the DbData child class
      * @return a CompletableFuture contains the UpdateResult.
      */
     public <T extends DbData> CompletableFuture<UpdateResult> updateFirstAsync(final T data) {
@@ -104,9 +106,10 @@ public class GamedoMongoTemplate implements MongoOperations {
      * Updates the first DbData that is found in the collection asynchronously. <b>Note that:</b>if the data hasn't saved before
      * yet, No query will matched, and won't insert a new document in the MongoDB either. This method has the consistent
      * behavior with {@linkplain MongoTemplate#updateFirst(Query, UpdateDefinition, Class)}
-     * @param data the data to be update.
+     *
+     * @param data     the data to be update.
      * @param executor the operating executor
-     * @param <T> the DbData child class
+     * @param <T>      the DbData child class
      * @return a CompletableFuture contains the UpdateResult.
      */
     public <T extends DbData> CompletableFuture<UpdateResult> updateFirstAsync(final T data, Executor executor) {
@@ -117,12 +120,13 @@ public class GamedoMongoTemplate implements MongoOperations {
      * Updates the first DbData that is found in the collection asynchronously. <b>Note that:</b>if the data hasn't saved before
      * yet, No query will matched, and won't insert a new document in the MongoDB either. This method has the consistent
      * behavior with {@linkplain MongoTemplate#updateFirst(Query, UpdateDefinition, Class)}
-     * @param data the data to be update.
+     *
+     * @param data     the data to be update.
      * @param executor the operating executor
-     * @param <T> the DbData child class
+     * @param <T>      the DbData child class
      * @return a CompletableFuture contains the UpdateResult.
      */
-    private  <T extends DbData> CompletableFuture<UpdateResult> updateFirstAsyncInner(final T data, final Executor executor) {
+    private <T extends DbData> CompletableFuture<UpdateResult> updateFirstAsyncInner(final T data, final Executor executor) {
 
         final String mongoDbFieldName = data.getMongoDbFieldName();
         final Updater updater = data.getUpdater();
