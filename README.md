@@ -157,6 +157,39 @@ public class Application {
 
 ## 设计思想
 
+### 拒绝样板代码
+gamedo-persistence-lombok工程提供了 **@MarkDirty** 注解，当该注解被标注到 **DbData** 子类或者类成员上时，注解处理器会自动生成以 **markDirty** 为前缀的更新方法，例如：
+
+``` java
+    @MarkDirty private int x;
+```
+将会生成：
+``` java
+    public void markDirtyX() {
+        this.getUpdate().setDirty('x', this.x);
+    }
+```
+利用该特性，以及lombok的 **@Setter** 和 **Accessors(chain = true)** 注解，可以快速实现数据的更新及标脏，例如：
+``` java
+    @EqualsAndHashCode(callSuper = true)
+    @Data
+    @Document("player")
+    @AllArgsConstructor
+    @MarkDirty
+    @Accessors(chain = true)
+    public class ComponentDbPosition extends ComponentDbData
+    {
+        private int x;
+        @MarkDirty.Exclude
+        private int y;
+    }
+```
+可以使用如下方式进行数据更新及标脏：
+``` java
+    data.setX(5).markDirtyX();
+``` 
+
+
 ### ECS：组合优于继承
 
 在gamedo.persistence中，游戏持久化对象数据被定义为：EntityDbData。它对应于ECS中的E（Entity），并且和ECS中的Entity相同的是：EntityDbData仅仅只是一个数据容器（当然，如果非得在EntityDbData的子类内增加成员变量也是可以的），真正要存储的数据都放在ComponentDbData中，对应于ECS中的C（Component），同时，EntityDbData和ComponentDbData都实现了DbData接口，通过观察DbData接口的定义，可以知道：

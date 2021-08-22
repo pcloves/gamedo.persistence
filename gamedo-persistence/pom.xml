@@ -7,11 +7,10 @@
     <parent>
         <groupId>org.gamedo</groupId>
         <artifactId>gamedo-persistence-parent</artifactId>
-        <version>1.3.0-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>gamedo-persistence</artifactId>
-    <version>1.3.0-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
