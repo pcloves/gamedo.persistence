@@ -38,6 +38,8 @@ public class EntityDbPlayer extends EntityDbData {
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Document("player")
+@Accessors(chain = true)
+@MarkDirty
 public class ComponentDbBag extends ComponentDbData
 {
     final List<Integer> itemList = new ArrayList<>();
@@ -97,8 +99,8 @@ public class Application {
         final ComponentDbBag componentDbData = entityDbPlayer.getComponentDbData(ComponentDbBag.class);
         //5、修改数据
         componentDbData.getItemList().add(1);
-        //6、对修改的变量进行标脏
-        componentDbData.setDirty("itemList", componentDbData.getItemList());
+        //6、对修改的变量进行标脏（markDirtyItemList()方法由lombok扩展注解：@MarkDirty自动生成）
+        componentDbData.markDirtyItemList();
         //7、进行异步更新，并通过CompletableFuture检查执行结果（如果使用不指定线程池的重载接口，默认使用ForkJoinPool.commonPool()线程池）。
         dataMongoTemplate.updateFirstAsync(null)
                          .exceptionally(throwable -> {
