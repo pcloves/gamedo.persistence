@@ -17,6 +17,12 @@
             <artifactId>gamedo-persistence-autoconfiguration</artifactId>
             <version>${revision}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.gamedo</groupId>
+            <artifactId>gamedo-persistence-lombok</artifactId>
+            <version>${revision}</version>
+        </dependency>
     </dependencies>
 
 </project>
