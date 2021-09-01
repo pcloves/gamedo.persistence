@@ -25,7 +25,7 @@ public class SynchronizedUpdater implements Updater
     private final String keyPrefix;
     private boolean isDirty;
     private final Update update;
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "FieldCanBeLocal"})
     private final Object lock;
 
     public SynchronizedUpdater(final String keyPrefix) {

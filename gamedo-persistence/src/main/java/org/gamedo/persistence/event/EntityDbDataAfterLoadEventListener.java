@@ -1,29 +1,25 @@
-package org.gamedo.persistence.converter;
+package org.gamedo.persistence.event;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.bson.Document;
 import org.gamedo.persistence.annotations.ComponentMap;
-import org.gamedo.persistence.config.MongoConfiguration;
 import org.gamedo.persistence.db.ComponentDbData;
 import org.gamedo.persistence.db.EntityDbData;
 import org.gamedo.persistence.logging.Markers;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper;
 import org.springframework.data.mongodb.core.convert.MongoConverter;
 import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;
 import org.springframework.data.mongodb.core.mapping.MongoPersistentProperty;
+import org.springframework.data.mongodb.core.mapping.event.AbstractMongoEventListener;
+import org.springframework.data.mongodb.core.mapping.event.AfterLoadEvent;
 
 import java.util.Objects;
 
-@Slf4j
-public abstract class AbstractEntityDbDataReadingConverter<T extends EntityDbData> implements Converter<Document, T> {
-
-    private final MongoConverter mongoConverter;
+@Log4j2
+public class EntityDbDataAfterLoadEventListener extends AbstractMongoEventListener<EntityDbData> {
     private final String componentsMapFieldName;
 
-    protected AbstractEntityDbDataReadingConverter(final MongoConfiguration configuration) {
-        mongoConverter = configuration.getMongoConverter();
-
+    public EntityDbDataAfterLoadEventListener(MongoConverter mongoConverter) {
         final MongoPersistentEntity<?> entity = mongoConverter.getMappingContext().getPersistentEntity(EntityDbData.class);
         final MongoPersistentProperty property = Objects.requireNonNull(entity).getPersistentProperty(ComponentMap.class);
 
@@ -31,32 +27,34 @@ public abstract class AbstractEntityDbDataReadingConverter<T extends EntityDbDat
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public T convert(Document source) {
+    public void onAfterLoad(AfterLoadEvent<EntityDbData> event) {
+        super.onAfterLoad(event);
+
+        final Document document = event.getSource();
 
         try {
-            //the EntityDbData.componentsDbDataMap has been unwrapped to key-value style when writing,
+            //the EntityDbData.componentsDbDataMap has been unwrapped to key-value style on writing,
             // there shouldn't be a field with the same name.
-            if (source.containsKey(componentsMapFieldName)) {
+            if (document.containsKey(componentsMapFieldName)) {
                 log.error(Markers.MongoDB,
-                        "the document should not contains field:{}, source:{}",
+                        "the document should not contains field:{}, document:{}",
                         componentsMapFieldName,
-                        source);
-                return null;
+                        document);
+                return;
             }
 
             final Document componentDataDbMap = new Document();
-            final String clazzName = source.getString(DefaultMongoTypeMapper.DEFAULT_TYPE_KEY);
+            final String clazzName = document.getString(DefaultMongoTypeMapper.DEFAULT_TYPE_KEY);
             final Class<?> clazz = Class.forName(clazzName);
 
-            //check whether the source class is valid.
+            //check whether the document class is valid.
             if (!EntityDbData.class.isAssignableFrom(clazz)) {
-                log.error(Markers.MongoDB, "invalid class:{}, source:{}", clazz, source);
-                return null;
+                log.error(Markers.MongoDB, "invalid class:{}, document:{}", clazz, document);
+                return;
             }
 
-            //remove all of the ComponentDbData and wrap them into the EntityDbData.componentsDbDataMap
-            source.entrySet().removeIf(entry -> {
+            //remove all the ComponentDbData and wrap them into the EntityDbData.componentsDbDataMap
+            document.entrySet().removeIf(entry -> {
                 final String key = entry.getKey();
                 final Object value = entry.getValue();
                 final boolean isComponentDbData = isComponentDbData(value);
@@ -67,19 +65,12 @@ public abstract class AbstractEntityDbDataReadingConverter<T extends EntityDbDat
                 return isComponentDbData;
             });
 
-            source.put(componentsMapFieldName, componentDataDbMap);
+            document.put(componentsMapFieldName, componentDataDbMap);
 
-            final Object entityDbData = mongoConverter.read(clazz, source);
+            log.debug(Markers.MongoDB, "reading convert finish, document:{}", () -> document);
 
-            if (log.isDebugEnabled()) {
-                log.debug(Markers.MongoDB, "reading convert finish, source:{}, target:{}", source, entityDbData);
-            }
-
-            return (T) entityDbData;
         } catch (Exception e) {
-            log.error(Markers.MongoDB, "exception caught on reading document:" + source, e);
-
-            return null;
+            log.error(Markers.MongoDB, "exception caught on reading document:" + document, e);
         }
     }
 

@@ -1,7 +1,7 @@
 package org.gamedo.persistence;
 
 import com.mongodb.client.result.UpdateResult;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.bson.types.ObjectId;
 import org.gamedo.persistence.config.MyConfiguration;
 import org.gamedo.persistence.db.ComponentDbBag;
@@ -19,7 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-@Slf4j
+@Log4j2
 @SpringBootTest(classes = MyConfiguration.class)
 @SpringBootApplication
 class GamedoMongoTemplateTest {

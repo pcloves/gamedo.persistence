@@ -23,6 +23,7 @@
             <version>${revision}</version>
         </dependency>
 
+        <!--because of-->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>gamedo-persistence-lombok-unshaded</artifactId>

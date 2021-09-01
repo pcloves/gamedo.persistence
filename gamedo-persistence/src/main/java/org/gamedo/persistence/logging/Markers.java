@@ -1,10 +1,8 @@
 package org.gamedo.persistence.logging;
 
 
-import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
-
-import java.util.Arrays;
+import org.apache.logging.log4j.Marker;
+import org.apache.logging.log4j.MarkerManager;
 
 public final class Markers
 {
@@ -14,9 +12,8 @@ public final class Markers
     private Markers() {
     }
 
-    public static Marker of(String name, Marker ... parents) {
-        final Marker marker = MarkerFactory.getMarker(name);
-        Arrays.stream(parents).forEach(marker::add);
-        return marker;
+    public static org.apache.logging.log4j.Marker of(String name, org.apache.logging.log4j.Marker... parents) {
+        return MarkerManager.getMarker(name).setParents(parents);
     }
+
 }

@@ -14,7 +14,7 @@ gamedo.persistence是gamedo游戏服务器框架的持久化模块。它底层�
 ``` xml
 <dependency>
   <groupId>org.gamedo</groupId>
-  <artifactId>persistence</artifactId>
+  <artifactId>gamedo-persistence-starter</artifactId>
   <version>${gamedo.persistence.version}</version>
 </dependency>
 ```
@@ -50,30 +50,10 @@ public class ComponentDbBag extends ComponentDbData
 }
 ```
 
-3. 定义**EntityDbPlayer**的转换器（属于样板代码，不需要实现逻辑），由于gamedo.persistence在设计过程中，使用了使用了自定义转换器对EntityDbData类进行序列化和反序列化，因此其子类也需要继承 **AbstractEntityDbDataReadingConverter**和 **AbstractEntityDbDataWritingConverter**并加上 **@Component** 注解，目的可以正确加载到spring的IOC容器中
-
-``` java
-@Component
-@ReadingConverter
-public class EntityDbPlayerReadingConverter extends AbstractEntityDbDataReadingConverter<EntityDbPlayer> {
-    public EntityDbPlayerReadingConverter(MongoConfiguration configuration) {
-        super(configuration);
-    }
-}
-
-@Component
-@WritingConverter
-public class EntityDbPlayerWriterConverter extends AbstractEntityDbDataWritingConverter<EntityDbPlayer> {
-    public EntityDbPlayerWriterConverter(MongoConfiguration configuration) {
-        super(configuration);
-    }
-}
-```
-
-4. 搞定！接下来就是使用gamedo.persistence了
+3. 搞定！接下来就是使用gamedo.persistence了
 
  ``` java
-@Slf4j
+@Log4j2
 @SpringBootApplication(scanBasePackages = {"org.gamedo", "org.gamedo.persistence"})
 public class Application {
     public static void main(String[] args) {

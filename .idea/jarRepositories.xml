@@ -21,5 +21,10 @@
       <option name="name" value="Central Repository" />
       <option name="url" value="https://maven.aliyun.com/repository/public" />
     </remote-repository>
+    <remote-repository>
+      <option name="id" value="oss.sonatype.org-snapshot" />
+      <option name="name" value="oss.sonatype.org-snapshot" />
+      <option name="url" value="https://s01.oss.sonatype.org/content/repositories/snapshots" />
+    </remote-repository>
   </component>
 </project>

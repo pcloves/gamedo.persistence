@@ -1,14 +1,13 @@
 package org.gamedo.persistence;
 
 import com.mongodb.client.result.UpdateResult;
-import lombok.experimental.Delegate;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.bson.Document;
 import org.gamedo.persistence.db.DbData;
 import org.gamedo.persistence.db.SynchronizedUpdater;
 import org.gamedo.persistence.db.Updater;
 import org.gamedo.persistence.logging.Markers;
-import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.MongoConverter;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -17,19 +16,27 @@ import org.springframework.data.mongodb.core.query.UpdateDefinition;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 
 @SuppressWarnings("unused")
-@Slf4j
-public class GamedoMongoTemplate implements MongoOperations {
+@Log4j2
+public class GamedoMongoTemplate extends MongoTemplate {
 
-    private static final Executor ASYNC_POOL = new CompletableFuture<Void>().defaultExecutor();
+    private static final Executor ASYNC_POOL = ForkJoinPool.commonPool();
 
-    @Delegate(types = MongoOperations.class)
-    private final MongoTemplate mongoTemplate;
+    public GamedoMongoTemplate(com.mongodb.client.MongoClient mongoClient, String databaseName) {
+        super(mongoClient, databaseName);
+        SynchronizedUpdater.setMongoConverter(getConverter());
+    }
 
-    public GamedoMongoTemplate(MongoTemplate mongoTemplate) {
-        this.mongoTemplate = mongoTemplate;
-        SynchronizedUpdater.setMongoConverter(mongoTemplate.getConverter());
+    public GamedoMongoTemplate(MongoDatabaseFactory mongoDbFactory) {
+        super(mongoDbFactory);
+        SynchronizedUpdater.setMongoConverter(getConverter());
+    }
+
+    public GamedoMongoTemplate(MongoDatabaseFactory mongoDbFactory, MongoConverter mongoConverter) {
+        super(mongoDbFactory, mongoConverter);
+        SynchronizedUpdater.setMongoConverter(getConverter());
     }
 
     /**
@@ -63,7 +70,7 @@ public class GamedoMongoTemplate implements MongoOperations {
         final String mongoDbFieldName = data.getMongoDbFieldName();
 
         final Document document = new Document();
-        final MongoConverter converter = mongoTemplate.getConverter();
+        final MongoConverter converter = getConverter();
         //serialize to Document on the caller thread.
         converter.write(data, document);
         //deserialize back to DbData
@@ -80,7 +87,7 @@ public class GamedoMongoTemplate implements MongoOperations {
                         hashCode,
                         dbData);
             }
-            final T savedData = mongoTemplate.save(dbData);
+            final T savedData = save(dbData);
             if (log.isDebugEnabled()) {
                 log.debug(Markers.MongoDB, "saveAsync finish, id:{}, hashCode:{}", id, hashCode);
             }
@@ -91,10 +98,10 @@ public class GamedoMongoTemplate implements MongoOperations {
 
     /**
      * Updates the first DbData that is found in the collection asynchronously. <b>Note that:</b>if the data hasn't saved before
-     * yet, No query will matched, and won't insert a new document in the MongoDB either. This method has the consistent
+     * yet, No query will match, and won't insert a new document in the MongoDB either. This method has the consistent
      * behavior with {@linkplain MongoTemplate#updateFirst(Query, UpdateDefinition, Class)}
      *
-     * @param data the data to be update.
+     * @param data the data to be updated.
      * @param <T>  the DbData child class
      * @return a CompletableFuture contains the UpdateResult.
      */
@@ -104,10 +111,10 @@ public class GamedoMongoTemplate implements MongoOperations {
 
     /**
      * Updates the first DbData that is found in the collection asynchronously. <b>Note that:</b>if the data hasn't saved before
-     * yet, No query will matched, and won't insert a new document in the MongoDB either. This method has the consistent
+     * yet, No query will match, and won't insert a new document in the MongoDB either. This method has the consistent
      * behavior with {@linkplain MongoTemplate#updateFirst(Query, UpdateDefinition, Class)}
      *
-     * @param data     the data to be update.
+     * @param data     the data to be updated.
      * @param executor the operating executor
      * @param <T>      the DbData child class
      * @return a CompletableFuture contains the UpdateResult.
@@ -118,10 +125,10 @@ public class GamedoMongoTemplate implements MongoOperations {
 
     /**
      * Updates the first DbData that is found in the collection asynchronously. <b>Note that:</b>if the data hasn't saved before
-     * yet, No query will matched, and won't insert a new document in the MongoDB either. This method has the consistent
+     * yet, No query will match, and won't insert a new document in the MongoDB either. This method has the consistent
      * behavior with {@linkplain MongoTemplate#updateFirst(Query, UpdateDefinition, Class)}
      *
-     * @param data     the data to be update.
+     * @param data     the data to be updated.
      * @param executor the operating executor
      * @param <T>      the DbData child class
      * @return a CompletableFuture contains the UpdateResult.
@@ -160,7 +167,7 @@ public class GamedoMongoTemplate implements MongoOperations {
                             mongoDbFieldName,
                             updater);
                 }
-                final UpdateResult updateResult = mongoTemplate.updateFirst(query, updater, clazz);
+                final UpdateResult updateResult = updateFirst(query, updater, clazz);
                 if (log.isDebugEnabled()) {
                     log.debug(Markers.MongoDB,
                             "updateFirstAsync finish, id:{}, hashCode:{}, result:{}",
