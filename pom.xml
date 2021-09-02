@@ -22,7 +22,7 @@
         <module>gamedo-persistence-lombok-unshaded</module>
         <module>gamedo-persistence-lombok</module>
         <module>gamedo-persistence-autoconfiguration</module>
-        <module>gamedo-persistence-starter</module>
+        <module>gamedo-persistence-spring-boot-starter</module>
     </modules>
 
     <dependencies>

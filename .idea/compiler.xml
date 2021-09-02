@@ -9,8 +9,8 @@
         <outputRelativeToContentRoot value="true" />
         <module name="gamedo-persistence" />
         <module name="gamedo-persistence-autoconfiguration" />
-        <module name="gamedo-persistence-starter" />
         <module name="gamedo-persistence-lombok-unshaded" />
+        <module name="gamedo-persistence-spring-boot-starter" />
       </profile>
       <profile name="Annotation profile for gamedo-persistence-parent" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -44,6 +44,9 @@
         <module name="gamedo-persistence-lombok" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="gamedo-persistence-starter" target="11" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
@@ -52,6 +55,7 @@
       <module name="gamedo-persistence-lombok" options="-parameters --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED" />
       <module name="gamedo-persistence-lombok-unshaded" options="-parameters" />
       <module name="gamedo-persistence-parent" options="-parameters" />
+      <module name="gamedo-persistence-spring-boot-starter" options="-parameters" />
       <module name="gamedo-persistence-starter" options="-parameters" />
     </option>
   </component>

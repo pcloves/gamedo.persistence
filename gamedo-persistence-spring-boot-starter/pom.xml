@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>gamedo-persistence-starter</artifactId>
+    <artifactId>gamedo-persistence-spring-boot-starter</artifactId>
 
     <dependencies>
         <dependency>
