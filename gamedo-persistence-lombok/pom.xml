@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>gamedo-persistence-lombok</artifactId>
+    <name>the lombok plugin extension for gamedo persistence module</name>
 
     <properties>
         <metainf-services.version>1.8</metainf-services.version>

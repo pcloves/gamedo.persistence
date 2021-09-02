@@ -12,7 +12,7 @@
         <module name="gamedo-persistence-spring-boot-starter" />
         <module name="gamedo-persistence-lombok-unshaded" />
       </profile>
-      <profile name="Annotation profile for gamedo-persistence-parent" enabled="true">
+      <profile name="Annotation profile for the persistence module for 'gamedo' backend game server architecture" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
