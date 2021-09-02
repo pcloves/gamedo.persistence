@@ -4,15 +4,18 @@ import lombok.extern.log4j.Log4j2;
 import org.gamedo.persistence.GamedoMongoTemplate;
 import org.gamedo.persistence.event.EntityDbDataAfterLoadEventListener;
 import org.gamedo.persistence.event.EntityDbDataBeforeSaveEventListener;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
 import org.springframework.data.mongodb.core.convert.MongoConverter;
 
 @Log4j2
 @Configuration
+@AutoConfigureAfter(MongoDataAutoConfiguration.class)
 public class MyConfiguration {
 
     @Bean
@@ -21,9 +24,13 @@ public class MyConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(GamedoMongoTemplate.class)
-    GamedoMongoTemplate gamedoMongoTemplate(MongoDatabaseFactory factory, MongoConverter converter) {
-        return new GamedoMongoTemplate(factory, converter);
+    MongoTemplate mongoTemplate(MongoDatabaseFactory mongoDatabaseFactory, MongoConverter mongoConverter) {
+        return new MongoTemplate(mongoDatabaseFactory, mongoConverter);
+    }
+
+    @Bean
+    GamedoMongoTemplate gamedoMongoTemplate(MongoTemplate mongoTemplate) {
+        return new GamedoMongoTemplate(mongoTemplate);
     }
 
     @Bean

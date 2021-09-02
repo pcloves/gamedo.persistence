@@ -1,18 +1,18 @@
 package org.gamedo.persistence;
 
 import com.mongodb.client.result.UpdateResult;
+import lombok.experimental.Delegate;
 import lombok.extern.log4j.Log4j2;
 import org.bson.Document;
-import org.gamedo.persistence.db.DbData;
-import org.gamedo.persistence.db.SynchronizedUpdater;
-import org.gamedo.persistence.db.Updater;
+import org.gamedo.persistence.db.*;
 import org.gamedo.persistence.logging.Markers;
-import org.springframework.data.mongodb.MongoDatabaseFactory;
+import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper;
 import org.springframework.data.mongodb.core.convert.MongoConverter;
+import org.springframework.data.mongodb.core.index.IndexOperationsProvider;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.UpdateDefinition;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -20,46 +20,24 @@ import java.util.concurrent.ForkJoinPool;
 
 @SuppressWarnings("unused")
 @Log4j2
-public class GamedoMongoTemplate extends MongoTemplate {
+public class GamedoMongoTemplate implements MongoOperations, IndexOperationsProvider, IGamedoMongoTemplate {
 
     private static final Executor ASYNC_POOL = ForkJoinPool.commonPool();
+    @Delegate(types = MongoTemplate.class)
+    private final MongoTemplate mongoTemplate;
 
-    public GamedoMongoTemplate(com.mongodb.client.MongoClient mongoClient, String databaseName) {
-        super(mongoClient, databaseName);
+    public GamedoMongoTemplate(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
         SynchronizedUpdater.setMongoConverter(getConverter());
     }
 
-    public GamedoMongoTemplate(MongoDatabaseFactory mongoDbFactory) {
-        super(mongoDbFactory);
-        SynchronizedUpdater.setMongoConverter(getConverter());
-    }
-
-    public GamedoMongoTemplate(MongoDatabaseFactory mongoDbFactory, MongoConverter mongoConverter) {
-        super(mongoDbFactory, mongoConverter);
-        SynchronizedUpdater.setMongoConverter(getConverter());
-    }
-
-    /**
-     * save a DbData in another thread asynchronously.
-     *
-     * @param data the data to be saved.
-     * @param <T>  the DbData child class
-     * @return a CompletableFuture contains the data itself.
-     */
-    public <T extends DbData> CompletableFuture<T> saveAsync(final T data) {
+    @Override
+    public <T extends DbData> CompletableFuture<T> saveDbDataAsync(final T data) {
         return saveAsyncInner(data, ASYNC_POOL);
     }
 
-    /**
-     * save a DbData in another thread asynchronously.
-     *
-     * @param data     the data to be saved.
-     * @param executor the operating executor
-     * @param <T>      the DbData child class
-     * @return a CompletableFuture contains the data itself.
-     */
-
-    public <T extends DbData> CompletableFuture<T> saveAsync(final T data, final Executor executor) {
+    @Override
+    public <T extends DbData> CompletableFuture<T> saveDbDataAsync(final T data, final Executor executor) {
         return saveAsyncInner(data, executor);
     }
 
@@ -96,43 +74,47 @@ public class GamedoMongoTemplate extends MongoTemplate {
         }, executor);
     }
 
-    /**
-     * Updates the first DbData that is found in the collection asynchronously. <b>Note that:</b>if the data hasn't saved before
-     * yet, No query will match, and won't insert a new document in the MongoDB either. This method has the consistent
-     * behavior with {@linkplain MongoTemplate#updateFirst(Query, UpdateDefinition, Class)}
-     *
-     * @param data the data to be updated.
-     * @param <T>  the DbData child class
-     * @return a CompletableFuture contains the UpdateResult.
-     */
-    public <T extends DbData> CompletableFuture<UpdateResult> updateFirstAsync(final T data) {
+    @Override
+    public <T extends DbData> CompletableFuture<UpdateResult> updateDbDataFirstAsync(final T data) {
         return updateFirstAsyncInner(data, ASYNC_POOL);
     }
 
-    /**
-     * Updates the first DbData that is found in the collection asynchronously. <b>Note that:</b>if the data hasn't saved before
-     * yet, No query will match, and won't insert a new document in the MongoDB either. This method has the consistent
-     * behavior with {@linkplain MongoTemplate#updateFirst(Query, UpdateDefinition, Class)}
-     *
-     * @param data     the data to be updated.
-     * @param executor the operating executor
-     * @param <T>      the DbData child class
-     * @return a CompletableFuture contains the UpdateResult.
-     */
-    public <T extends DbData> CompletableFuture<UpdateResult> updateFirstAsync(final T data, Executor executor) {
+    @Override
+    public <T extends DbData> CompletableFuture<UpdateResult> updateDbDataFirstAsync(final T data, Executor executor) {
         return updateFirstAsyncInner(data, executor);
     }
 
-    /**
-     * Updates the first DbData that is found in the collection asynchronously. <b>Note that:</b>if the data hasn't saved before
-     * yet, No query will match, and won't insert a new document in the MongoDB either. This method has the consistent
-     * behavior with {@linkplain MongoTemplate#updateFirst(Query, UpdateDefinition, Class)}
-     *
-     * @param data     the data to be updated.
-     * @param executor the operating executor
-     * @param <T>      the DbData child class
-     * @return a CompletableFuture contains the UpdateResult.
-     */
+    @Override
+    public <T extends EntityDbData, V extends ComponentDbData> CompletableFuture<V> findComponentDbDataDbDataByIdAsync(String id,
+                                                                                                                       Class<T> entityClass,
+                                                                                                                       Class<V> componentClazz)
+    {
+        return findDbDataByIdInner(id, entityClass, componentClazz, ASYNC_POOL);
+    }
+
+    @Override
+    public <T extends EntityDbData, V extends ComponentDbData> CompletableFuture<V> findComponentDbDataDbDataByIdAsync(String id,
+                                                                                                                       Class<T> entityClass,
+                                                                                                                       Class<V> componentClazz,
+                                                                                                                       Executor executor) {
+        return findDbDataByIdInner(id, entityClass, componentClazz, executor);
+    }
+
+    private <T extends EntityDbData, V extends ComponentDbData> CompletableFuture<V> findDbDataByIdInner(String id,
+                                                                                                         Class<T> entityClass,
+                                                                                                         Class<V> componentClazz,
+                                                                                                         Executor executor) {
+        final Query query = new Query();
+        query.addCriteria(Criteria.where("_id").is(id));
+        query.fields().include(componentClazz.getSimpleName()).include(DefaultMongoTypeMapper.DEFAULT_TYPE_KEY);
+
+        return CompletableFuture.supplyAsync(() -> find(query, entityClass)
+                .stream()
+                .map(data -> data.getComponentDbData(componentClazz))
+                .findFirst()
+                .orElse(null), executor);
+    }
+
     private <T extends DbData> CompletableFuture<UpdateResult> updateFirstAsyncInner(final T data, final Executor executor) {
 
         final String mongoDbFieldName = data.getMongoDbFieldName();

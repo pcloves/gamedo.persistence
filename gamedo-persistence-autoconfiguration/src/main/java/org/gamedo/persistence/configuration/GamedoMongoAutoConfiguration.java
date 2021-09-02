@@ -3,25 +3,26 @@ package org.gamedo.persistence.configuration;
 import org.gamedo.persistence.GamedoMongoTemplate;
 import org.gamedo.persistence.event.EntityDbDataAfterLoadEventListener;
 import org.gamedo.persistence.event.EntityDbDataBeforeSaveEventListener;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.mongodb.MongoDatabaseFactory;
-import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.MongoConverter;
 
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(MongoTemplate.class)
+@AutoConfigureAfter(MongoDataAutoConfiguration.class)
 public class GamedoMongoAutoConfiguration {
 
     @Bean
-    @ConditionalOnMissingBean({MongoOperations.class})
-    @ConditionalOnBean({MongoDatabaseFactory.class, MongoConverter.class})
-    GamedoMongoTemplate gamedoMongoTemplate(MongoDatabaseFactory factory, MongoConverter converter) {
-        return new GamedoMongoTemplate(factory, converter);
+    @ConditionalOnBean(MongoTemplate.class)
+    @ConditionalOnMissingBean(GamedoMongoTemplate.class)
+    GamedoMongoTemplate gamedoMongoTemplate(MongoTemplate mongoTemplate) {
+        return new GamedoMongoTemplate(mongoTemplate);
     }
 
     @Bean
