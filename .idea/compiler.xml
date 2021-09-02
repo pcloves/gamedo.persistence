@@ -7,10 +7,10 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="gamedo-persistence" />
         <module name="gamedo-persistence-autoconfiguration" />
-        <module name="gamedo-persistence-lombok-unshaded" />
+        <module name="gamedo-persistence" />
         <module name="gamedo-persistence-spring-boot-starter" />
+        <module name="gamedo-persistence-lombok-unshaded" />
       </profile>
       <profile name="Annotation profile for gamedo-persistence-parent" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />

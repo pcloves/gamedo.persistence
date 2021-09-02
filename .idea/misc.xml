@@ -9,6 +9,8 @@
       <list>
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/gamedo-persistence-lombok/pom.xml" />
+        <option value="$PROJECT_DIR$/gamedo-persistence-autoconfiguration/pom.xml" />
+        <option value="$PROJECT_DIR$/gamedo-persistence-lombok-unshaded/pom.xml" />
       </list>
     </option>
   </component>
