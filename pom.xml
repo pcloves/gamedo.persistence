@@ -13,7 +13,7 @@
         <revision>1.4.0</revision>
     </properties>
 
-    <name>gamedo-persistence</name>
+    <name>the persistence module for 'gamedo' backend game server architecture</name>
     <artifactId>gamedo-persistence-parent</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
