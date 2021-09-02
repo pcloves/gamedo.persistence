@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 @Getter
 @Setter
 @ToString
@@ -23,14 +23,14 @@ public class EntityDbData implements DbData {
      * the id
      */
     @Id
-    public final String id;
+    public volatile String id;
     /**
      * simple class name --> ComponentDbData
      */
     @Getter(AccessLevel.NONE)
     @ComponentMap
     @Field("_componentDbDataMap")
-    private final Map<String, ComponentDbData> componentDbDataMap;
+    private volatile Map<String, ComponentDbData> componentDbDataMap;
     /**
      * the updater for incrementally update.
      */
