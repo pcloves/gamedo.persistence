@@ -10,14 +10,13 @@
     </parent>
 
     <properties>
-        <revision>1.4.0-SNAPSHOT</revision>
+        <revision>1.4.0</revision>
     </properties>
 
+    <name>gamedo-persistence</name>
     <artifactId>gamedo-persistence-parent</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
-
-
 
     <dependencies>
         <dependency>
@@ -62,6 +61,9 @@
                 <executions>
                     <execution>
                         <id>flatten</id>
+                        <configuration>
+                            <flattenMode>ossrh</flattenMode>
+                        </configuration>
                         <phase>process-resources</phase>
                         <goals>
                             <goal>flatten</goal>
