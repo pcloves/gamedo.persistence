@@ -1,4 +1,4 @@
-![GitHub](https://img.shields.io/github/license/pcloves/gamedo.persistence?style=flat-square) ![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/pcloves/gamedo.persistence?style=flat-square) ![Maven Central](https://img.shields.io/maven-central/v/org.gamedo/persistence?style=flat-square) ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/pcloves/gamedo.persistence/Java%20CI%20with%20Maven?style=flat-square)
+![GitHub](https://img.shields.io/github/license/pcloves/gamedo.persistence?style=flat-square) ![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/pcloves/gamedo.persistence?style=flat-square) ![Maven Central](https://img.shields.io/maven-central/v/org.gamedo/gamedo-persistence-spring-boot-starter?style=flat-square) ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/pcloves/gamedo.persistence/Java%20CI%20with%20Maven?style=flat-square)
 
 
 # gamedo.persistence
