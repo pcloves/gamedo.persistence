@@ -4,6 +4,7 @@ import com.mongodb.client.result.UpdateResult;
 import lombok.experimental.Delegate;
 import lombok.extern.log4j.Log4j2;
 import org.bson.Document;
+import org.gamedo.persistence.annotations.EntityDbDataComponent;
 import org.gamedo.persistence.db.*;
 import org.gamedo.persistence.logging.Markers;
 import org.springframework.data.mongodb.core.MongoOperations;
@@ -85,30 +86,27 @@ public class GamedoMongoTemplate implements MongoOperations, IndexOperationsProv
     }
 
     @Override
-    public <T extends EntityDbData, V extends ComponentDbData> CompletableFuture<V> findComponentDbDataDbDataByIdAsync(String id,
-                                                                                                                       Class<T> entityClass,
-                                                                                                                       Class<V> componentClazz)
+    public <T extends EntityDbData, V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(String id,
+                                                                                                                 Class<V> componentClazz)
     {
-        return findDbDataByIdInner(id, entityClass, componentClazz, ASYNC_POOL);
+        return findComponentDbDataByIdInner(id, componentClazz, ASYNC_POOL);
     }
 
     @Override
-    public <T extends EntityDbData, V extends ComponentDbData> CompletableFuture<V> findComponentDbDataDbDataByIdAsync(String id,
-                                                                                                                       Class<T> entityClass,
-                                                                                                                       Class<V> componentClazz,
-                                                                                                                       Executor executor) {
-        return findDbDataByIdInner(id, entityClass, componentClazz, executor);
+    public <T extends EntityDbData, V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(String id,
+                                                                                                                 Class<V> componentClazz,
+                                                                                                                 Executor executor) {
+        return findComponentDbDataByIdInner(id, componentClazz, executor);
     }
 
-    private <T extends EntityDbData, V extends ComponentDbData> CompletableFuture<V> findDbDataByIdInner(String id,
-                                                                                                         Class<T> entityClass,
-                                                                                                         Class<V> componentClazz,
-                                                                                                         Executor executor) {
+    private <T extends EntityDbData, V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdInner(String id,
+                                                                                                                  Class<V> componentClazz,
+                                                                                                                  Executor executor) {
         final Query query = new Query();
         query.addCriteria(Criteria.where("_id").is(id));
         query.fields().include(componentClazz.getSimpleName()).include(DefaultMongoTypeMapper.DEFAULT_TYPE_KEY);
 
-        return CompletableFuture.supplyAsync(() -> find(query, entityClass)
+        return CompletableFuture.supplyAsync(() -> find(query, componentClazz.getAnnotation(EntityDbDataComponent.class).value())
                 .stream()
                 .map(data -> data.getComponentDbData(componentClazz))
                 .findFirst()

@@ -59,23 +59,21 @@ public interface IGamedoMongoTemplate {
     /**
      * find a {@link ComponentDbData}
      * @param id the EntityDbData id
-     * @param entityClass the entity clazz
      * @param componentClazz the component class
      * @param <T> the entity clazz type
      * @param <V> the component clazz type
      * @return return the componentDbData or null
      */
-    <T extends EntityDbData, V extends ComponentDbData> CompletableFuture<V> findComponentDbDataDbDataByIdAsync(String id, Class<T> entityClass, Class<V> componentClazz);
+    <T extends EntityDbData, V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(String id, Class<V> componentClazz);
 
     /**
      * find a {@link ComponentDbData}
      * @param id the EntityDbData id
-     * @param entityClass the entity clazz
      * @param componentClazz the component class
      * @param executor the operating executor
      * @param <T> the entity clazz type
      * @param <V> the component clazz type
      * @return return the componentDbData or null
      */
-    <T extends EntityDbData, V extends ComponentDbData> CompletableFuture<V> findComponentDbDataDbDataByIdAsync(String id, Class<T> entityClass, Class<V> componentClazz, Executor executor);
+    <T extends EntityDbData, V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(String id, Class<V> componentClazz, Executor executor);
 }

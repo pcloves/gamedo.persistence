@@ -74,9 +74,11 @@ class GamedoMongoTemplateTest {
 
         final EntityDbPlayer entityDbData = new EntityDbPlayer(new ObjectId().toString(), null);
 
-        entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
+        final ComponentDbStatistic componentDbStatistic = new ComponentDbStatistic("testSaveComponentDbData");
+        entityDbData.addComponentDbData(componentDbStatistic);
 
         Assertions.assertDoesNotThrow(() -> gamedoMongoTemplate.saveDbDataAsync(entityDbData).get());
+        Assertions.assertDoesNotThrow(() -> gamedoMongoTemplate.saveDbDataAsync(componentDbStatistic).get());
     }
 
     @Test
@@ -209,7 +211,7 @@ class GamedoMongoTemplateTest {
 
     @Test
     public void testFindComponentDbDataDbDataByIdAsync() {
-        final CompletableFuture<ComponentDbStatistic> future = gamedoMongoTemplate.findComponentDbDataDbDataByIdAsync(EntityId, EntityDbPlayer.class, ComponentDbStatistic.class);
+        final CompletableFuture<ComponentDbStatistic> future = gamedoMongoTemplate.findComponentDbDataByIdAsync(EntityId, ComponentDbStatistic.class);
 
         future.thenAccept(componentDbStatistic -> Assertions.assertEquals(DEFAULT_NAME, componentDbStatistic.getName())).join();
 

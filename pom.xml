@@ -10,7 +10,7 @@
     </parent>
 
     <properties>
-        <revision>1.4.1</revision>
+        <revision>1.5.0-SNAPSHOT</revision>
     </properties>
 
     <name>the persistence module for 'gamedo' backend game server architecture</name>

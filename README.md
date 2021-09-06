@@ -39,6 +39,7 @@ public class EntityDbPlayer extends EntityDbData {
 @Data
 @Document("player")
 @Accessors(chain = true)
+@EntityDbDataComponent(EntityDbPlayer.class)
 @MarkDirty
 public class ComponentDbBag extends ComponentDbData
 {

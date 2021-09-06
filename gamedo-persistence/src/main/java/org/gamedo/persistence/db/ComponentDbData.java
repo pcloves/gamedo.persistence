@@ -3,6 +3,7 @@ package org.gamedo.persistence.db;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.gamedo.persistence.annotations.EntityDbDataComponent;
 import org.springframework.data.annotation.Transient;
 
 @Getter
@@ -24,9 +25,16 @@ public abstract class ComponentDbData implements DbData {
     @Transient
     private final String mongoDbFieldName;
 
+    /**
+     * the {@link EntityDbData}'s clazz belongs to.
+     */
+    @Transient
+    private final Class<? extends EntityDbData> entityDbDataClazz;
+
     protected ComponentDbData() {
         //We use the class's simple name as the field name.
         final Class<? extends ComponentDbData> clazz = getClass();
+        entityDbDataClazz = clazz.getAnnotation(EntityDbDataComponent.class).value();
         mongoDbFieldName = clazz.getSimpleName();
         updater = new SynchronizedUpdater(getMongoDbFieldName());
     }
