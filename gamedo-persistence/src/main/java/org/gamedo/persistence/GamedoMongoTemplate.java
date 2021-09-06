@@ -86,20 +86,20 @@ public class GamedoMongoTemplate implements MongoOperations, IndexOperationsProv
     }
 
     @Override
-    public <T extends EntityDbData, V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(String id,
+    public <V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(String id,
                                                                                                                  Class<V> componentClazz)
     {
         return findComponentDbDataByIdInner(id, componentClazz, ASYNC_POOL);
     }
 
     @Override
-    public <T extends EntityDbData, V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(String id,
+    public <V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(String id,
                                                                                                                  Class<V> componentClazz,
                                                                                                                  Executor executor) {
         return findComponentDbDataByIdInner(id, componentClazz, executor);
     }
 
-    private <T extends EntityDbData, V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdInner(String id,
+    private <V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdInner(String id,
                                                                                                                   Class<V> componentClazz,
                                                                                                                   Executor executor) {
         final Query query = new Query();

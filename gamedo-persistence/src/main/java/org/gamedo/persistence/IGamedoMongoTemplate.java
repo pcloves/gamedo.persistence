@@ -3,7 +3,6 @@ package org.gamedo.persistence;
 import com.mongodb.client.result.UpdateResult;
 import org.gamedo.persistence.db.ComponentDbData;
 import org.gamedo.persistence.db.DbData;
-import org.gamedo.persistence.db.EntityDbData;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.UpdateDefinition;
@@ -60,20 +59,18 @@ public interface IGamedoMongoTemplate {
      * find a {@link ComponentDbData}
      * @param id the EntityDbData id
      * @param componentClazz the component class
-     * @param <T> the entity clazz type
      * @param <V> the component clazz type
      * @return return the componentDbData or null
      */
-    <T extends EntityDbData, V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(String id, Class<V> componentClazz);
+    <V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(String id, Class<V> componentClazz);
 
     /**
      * find a {@link ComponentDbData}
      * @param id the EntityDbData id
      * @param componentClazz the component class
      * @param executor the operating executor
-     * @param <T> the entity clazz type
      * @param <V> the component clazz type
      * @return return the componentDbData or null
      */
-    <T extends EntityDbData, V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(String id, Class<V> componentClazz, Executor executor);
+    <V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(String id, Class<V> componentClazz, Executor executor);
 }
