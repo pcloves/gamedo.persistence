@@ -9,13 +9,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * annotated on a {@link DbData} sub class or it's class fields, gamedo-persistence-lombok will generate <b>markDirty</b>
- * method, for example:<p>
+ * 注解到{@link DbData}子类或其字段上, gamedo-persistence-lombok会自动生成<b>update</b>方法，例如：<p>
  * <pre>
  * &#64;MarkDirty private int x;
  * </pre>
  *
- * will generate:<p>
+ * 将自动生成：<p>
  *
  * <pre>
  * public void updateX() {
