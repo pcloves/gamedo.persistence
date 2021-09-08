@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import org.bson.types.ObjectId;
 import org.gamedo.persistence.config.MyConfiguration;
 import org.gamedo.persistence.db.ComponentDbBag;
+import org.gamedo.persistence.db.ComponentDbComplex;
 import org.gamedo.persistence.db.ComponentDbStatistic;
 import org.gamedo.persistence.db.EntityDbPlayer;
 import org.junit.jupiter.api.Assertions;
@@ -16,8 +17,15 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 @Log4j2
 @SpringBootTest(classes = MyConfiguration.class)
@@ -63,9 +71,16 @@ class GamedoMongoTemplateTest {
 
         final EntityDbPlayer entityDbData = new EntityDbPlayer(new ObjectId().toString(), null);
 
-        entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
+        final ComponentDbStatistic componentDbData = new ComponentDbStatistic("componentDbData");
+        entityDbData.addComponentDbData(componentDbData);
 
-        gamedoMongoTemplate.save(entityDbData);
+        Assertions.assertDoesNotThrow(() -> gamedoMongoTemplate.save(entityDbData));
+
+        componentDbData.setName("test");
+        Assertions.assertDoesNotThrow(() -> gamedoMongoTemplate.save(componentDbData));
+
+        final ComponentDbStatistic data = gamedoMongoTemplate.findComponentDbDataByIdAsync(entityDbData.id, ComponentDbStatistic.class).join();
+        Assertions.assertEquals("test", data.getName());
     }
 
     @Test
@@ -89,7 +104,7 @@ class GamedoMongoTemplateTest {
         final ComponentDbStatistic componentDbStatistic = entityDbData.getComponentDbData(ComponentDbStatistic.class);
 
         componentDbStatistic.setName("hello");
-        componentDbStatistic.setDirty("name", componentDbStatistic.getName());
+        componentDbStatistic.update("name", componentDbStatistic.getName());
 
         final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateDbDataFirstAsync(componentDbStatistic);
         final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
@@ -109,15 +124,14 @@ class GamedoMongoTemplateTest {
     }
 
     @Test
-    public void testUpsertAsync()
-    {
+    public void testUpsertAsync() {
         final List<EntityDbPlayer> entityDbPlayerList = gamedoMongoTemplate.findAll(EntityDbPlayer.class);
 
         final EntityDbPlayer entityDbData = entityDbPlayerList.get(0);
         final ComponentDbStatistic componentDbStatistic = entityDbData.getComponentDbData(ComponentDbStatistic.class);
 
         componentDbStatistic.setName("hello");
-        componentDbStatistic.setDirty("name", componentDbStatistic.getName());
+        componentDbStatistic.update("name", componentDbStatistic.getName());
         final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateDbDataFirstAsync(componentDbStatistic);
         final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
 
@@ -133,7 +147,6 @@ class GamedoMongoTemplateTest {
         final EntityDbPlayer entityDbData = new EntityDbPlayer(new ObjectId().toString(), null);
 
         entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
-        entityDbData.setComponentDbDataDirty(ComponentDbStatistic.class);
 
         final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateDbDataFirstAsync(entityDbData);
         final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
@@ -154,7 +167,7 @@ class GamedoMongoTemplateTest {
         final EntityDbPlayer entityDbData = new EntityDbPlayer(new ObjectId().toString(), null);
 
         entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
-        entityDbData.setAllComponentDbDataDirty();
+        entityDbData.updateAllComponentDbData();
 
         final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateDbDataFirstAsync(entityDbData);
         final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
@@ -173,7 +186,7 @@ class GamedoMongoTemplateTest {
         gamedoMongoTemplate.save(entityDbData);
 
         entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
-        entityDbData.setComponentDbDataDirty(ComponentDbStatistic.class);
+        entityDbData.updateComponentDbData(ComponentDbStatistic.class);
 
         final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateDbDataFirstAsync(entityDbData);
         final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
@@ -196,7 +209,7 @@ class GamedoMongoTemplateTest {
 
         entityDbData.addComponentDbData(new ComponentDbStatistic("testSaveComponentDbData"));
         entityDbData.addComponentDbData(new ComponentDbBag(Arrays.asList(1, 2, 3)));
-        entityDbData.setAllComponentDbDataDirty();
+        entityDbData.updateAllComponentDbData();
 
         final CompletableFuture<UpdateResult> future = gamedoMongoTemplate.updateDbDataFirstAsync(entityDbData);
         final UpdateResult updateResult = Assertions.assertDoesNotThrow((ThrowingSupplier<UpdateResult>) future::get);
@@ -215,5 +228,140 @@ class GamedoMongoTemplateTest {
 
         future.thenAccept(componentDbStatistic -> Assertions.assertEquals(DEFAULT_NAME, componentDbStatistic.getName())).join();
 
+    }
+
+    @Test
+    public void testComplexData() {
+        gamedoMongoTemplate.dropCollection(EntityDbPlayer.class);
+
+        final ComponentDbComplex componentDbComplex = ComponentDbComplex.builder().build();
+        componentDbComplex.setId(new ObjectId().toString());
+
+        gamedoMongoTemplate.save(componentDbComplex);
+
+        final ComponentDbComplex componentDbComplexLoad1 = gamedoMongoTemplate.findComponentDbDataByIdAsync(componentDbComplex.getId(), ComponentDbComplex.class).join();
+        Assertions.assertEquals(componentDbComplex, componentDbComplexLoad1);
+
+        final byte[] bytes = new byte[2];
+        ThreadLocalRandom.current().nextBytes(bytes);
+
+        componentDbComplex.setBooleanValue(ThreadLocalRandom.current().nextBoolean());
+        componentDbComplex.setByteValue(bytes[0]);
+        componentDbComplex.setShortValue((short) ThreadLocalRandom.current().nextInt(Short.MAX_VALUE + 1));
+        componentDbComplex.setIntValue(ThreadLocalRandom.current().nextInt());
+        componentDbComplex.setLongValue(ThreadLocalRandom.current().nextLong());
+
+        componentDbComplex.setBooleanBoxedValue(ThreadLocalRandom.current().nextBoolean());
+        componentDbComplex.setByteBoxedValue(bytes[1]);
+        componentDbComplex.setShortBoxedValue((short) ThreadLocalRandom.current().nextInt(Short.MAX_VALUE + 1));
+        componentDbComplex.setIntBoxedValue(ThreadLocalRandom.current().nextInt());
+        componentDbComplex.setLongBoxedValue(ThreadLocalRandom.current().nextLong());
+
+        componentDbComplex.setStringValue(randomString(ThreadLocalRandom.current().nextInt(100)));
+        componentDbComplex.setDateValue(new Date(ThreadLocalRandom.current().nextLong()));
+
+        componentDbComplex.setInnerDataSet(IntStream.range(1, ThreadLocalRandom.current().nextInt(30))
+                .mapToObj(k -> randomInnerData())
+                .collect(Collectors.toSet()));
+
+        gamedoMongoTemplate.save(componentDbComplex);
+        final ComponentDbComplex componentDbComplexLoad2 = gamedoMongoTemplate.findComponentDbDataByIdAsync(componentDbComplex.getId(), ComponentDbComplex.class).join();
+        Assertions.assertEquals(componentDbComplex, componentDbComplexLoad2);
+
+        componentDbComplex.setStringValue(randomString(100));
+        componentDbComplex.update("stringValue", componentDbComplex.getStringValue());
+        componentDbComplex.update("innerDataSet", componentDbComplex.getInnerDataSet());
+
+        final UpdateResult updateResult = gamedoMongoTemplate.updateDbDataFirstAsync(componentDbComplex).join();
+        Assertions.assertEquals(1, updateResult.getMatchedCount());
+        Assertions.assertEquals(1, updateResult.getModifiedCount());
+
+        final ComponentDbComplex componentDbComplexLoad3 = gamedoMongoTemplate.findComponentDbDataByIdAsync(componentDbComplex.getId(), ComponentDbComplex.class).join();
+        Assertions.assertEquals(componentDbComplex.getStringValue(), componentDbComplexLoad3.getStringValue());
+    }
+
+    ComponentDbComplex.InnerData randomInnerData() {
+        final byte[] bytes = new byte[2];
+        ThreadLocalRandom.current().nextBytes(bytes);
+        return ComponentDbComplex.InnerData.builder()
+
+                .booleanValue(ThreadLocalRandom.current().nextBoolean())
+                .byteValue(bytes[0])
+                .shortValue((short) ThreadLocalRandom.current().nextInt(Short.MAX_VALUE + 1))
+                .intValue(ThreadLocalRandom.current().nextInt())
+                .longValue(ThreadLocalRandom.current().nextLong())
+
+                .booleanBoxedValue(ThreadLocalRandom.current().nextBoolean())
+                .byteBoxedValue(bytes[1])
+                .shortBoxedValue((short) ThreadLocalRandom.current().nextInt(Short.MAX_VALUE + 1))
+                .intBoxedValue(ThreadLocalRandom.current().nextInt())
+                .longBoxedValue(ThreadLocalRandom.current().nextLong())
+
+                .stringValue(randomString(ThreadLocalRandom.current().nextInt(100)))
+                .dateValue(new Date(ThreadLocalRandom.current().nextLong()))
+
+                .innerInnerDataSet(IntStream.rangeClosed(1, ThreadLocalRandom.current().nextInt(30))
+                        .mapToObj(k -> randomInnerInnerData())
+                        .collect(Collectors.toSet()))
+
+                .longInnerInnerDataMap(LongStream.range(1, ThreadLocalRandom.current().nextInt(30))
+                        .boxed()
+                        .collect(Collectors.toMap(Function.identity(), key -> randomInnerInnerData())))
+                .build();
+    }
+
+    ComponentDbComplex.InnerInnerData randomInnerInnerData() {
+        final byte[] bytes = new byte[2];
+        ThreadLocalRandom.current().nextBytes(bytes);
+
+        return ComponentDbComplex.InnerInnerData.builder()
+                .booleanValue(ThreadLocalRandom.current().nextBoolean())
+                .byteValue(bytes[0])
+                .shortValue((short) ThreadLocalRandom.current().nextInt(Short.MAX_VALUE + 1))
+                .intValue(ThreadLocalRandom.current().nextInt())
+                .longValue(ThreadLocalRandom.current().nextLong())
+
+                .booleanBoxedValue(ThreadLocalRandom.current().nextBoolean())
+                .byteBoxedValue(bytes[1])
+                .shortBoxedValue((short) ThreadLocalRandom.current().nextInt(Short.MAX_VALUE + 1))
+                .intBoxedValue(ThreadLocalRandom.current().nextInt())
+                .longBoxedValue(ThreadLocalRandom.current().nextLong())
+
+                .stringValue(randomString(ThreadLocalRandom.current().nextInt(100)))
+                .dateValue(new Date(ThreadLocalRandom.current().nextLong()))
+
+                .booleanSet(new HashSet<>(List.of(ThreadLocalRandom.current().nextBoolean())))
+                .shortSet(IntStream.generate(() -> ThreadLocalRandom.current().nextInt(Short.MIN_VALUE, Short.MAX_VALUE + 1))
+                        .limit(ThreadLocalRandom.current().nextInt(30, ThreadLocalRandom.current().nextInt(31, 101)))
+                        .mapToObj(i -> (short) i)
+                        .collect(Collectors.toSet()))
+                .integerSet(IntStream.generate(() -> ThreadLocalRandom.current().nextInt())
+                        .limit(ThreadLocalRandom.current().nextInt(30, ThreadLocalRandom.current().nextInt(31, 101)))
+                        .boxed()
+                        .collect(Collectors.toSet()))
+                .longSet(LongStream.generate(() -> ThreadLocalRandom.current().nextInt())
+                        .limit(ThreadLocalRandom.current().nextInt(30, ThreadLocalRandom.current().nextInt(31,101)))
+                        .boxed()
+                        .collect(Collectors.toSet()))
+                .longLongMap(LongStream.generate(() -> ThreadLocalRandom.current().nextLong())
+                        .limit(ThreadLocalRandom.current().nextInt(30, ThreadLocalRandom.current().nextInt(31, 101)))
+                        .boxed()
+                        .collect(Collectors.toMap(Function.identity(), Function.identity())))
+                .longStringMap(LongStream.generate(() -> ThreadLocalRandom.current().nextLong())
+                        .limit(ThreadLocalRandom.current().nextInt(30, ThreadLocalRandom.current().nextInt(31, 101)))
+                        .boxed()
+                        .collect(Collectors.toMap(Function.identity(), key -> randomString(ThreadLocalRandom.current().nextInt(100)))))
+                .build();
+
+    }
+
+    String randomString(int length) {
+        int leftLimit = 97; // letter 'a'
+        int rightLimit = 122; // letter 'z'
+
+        return ThreadLocalRandom.current().ints(leftLimit, rightLimit + 1)
+                .limit(length)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
     }
 }

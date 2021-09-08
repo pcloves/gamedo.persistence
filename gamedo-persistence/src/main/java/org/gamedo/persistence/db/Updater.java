@@ -1,23 +1,42 @@
 package org.gamedo.persistence.db;
 
-import org.springframework.data.mongodb.core.query.UpdateDefinition;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Delegate;
+import org.springframework.data.mongodb.core.convert.MongoConverter;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.util.ClassTypeInformation;
 
 /**
- * An incremental Updater
+ * 增量更新器的默认实现
  */
-public interface Updater extends UpdateDefinition {
+public class Updater implements IUpdater
+{
+    @Setter
+    private static volatile MongoConverter mongoConverter;
 
-    /**
-     * mark the key is dirty, and set new value for key
-     * @param key the key to be set.
-     * @param value the new value.
-     */
-    void setDirty(String key, Object value);
+    @Getter
+    private final String prefix;
+    private boolean isDirty;
+    @Delegate
+    private final Update update;
 
-    /**
-     * is the Updater clean or dirty(meaning that the method {@linkplain Updater#setDirty(String, Object)} has been called).
-     * @return true if there are one or more keys set once.
-     */
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    boolean isDirty();
+    public Updater(final String prefix) {
+        this.prefix = prefix;
+        update = new Update();
+    }
+
+    @Override
+    public void update(final String key, final Object value) {
+        final Object mongoType = mongoConverter.convertToMongoType(value, ClassTypeInformation.OBJECT);
+
+        update.set(prefix + key, mongoType);
+        isDirty = true;
+    }
+
+    @Override
+    public boolean isDirty() {
+        return isDirty;
+    }
+
 }

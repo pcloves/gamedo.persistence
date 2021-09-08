@@ -1,51 +1,38 @@
 package org.gamedo.persistence.db;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-import org.gamedo.persistence.annotations.EntityDbDataComponent;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Transient;
 
-@Getter
-@Setter
-@ToString
+/**
+ * {@link ComponentDbData}代表了一个组件存储数据
+ */
+@Data
+@EqualsAndHashCode(of = "id")
 public abstract class ComponentDbData implements DbData {
 
     /**
-     * the entity's id belongs to.
+     * 所属{@link EntityDbData}的id
      */
-    @Transient
     private volatile String id;
     /**
      * the update of this ComponentDbData
      */
     @Transient
-    private volatile Updater updater;
-
-    @Transient
-    private final String mongoDbFieldName;
-
-    /**
-     * the {@link EntityDbData}'s clazz belongs to.
-     */
-    @Transient
-    private final Class<? extends EntityDbData> entityDbDataClazz;
+    private transient volatile IUpdater updater;
 
     protected ComponentDbData() {
         //We use the class's simple name as the field name.
-        final Class<? extends ComponentDbData> clazz = getClass();
-        entityDbDataClazz = clazz.getAnnotation(EntityDbDataComponent.class).value();
-        mongoDbFieldName = clazz.getSimpleName();
-        updater = new SynchronizedUpdater(getMongoDbFieldName());
+        updater = new Updater(getClass().getSimpleName() + ".");
     }
 
     @Override
-    public Updater getUpdater() {
+    public IUpdater getUpdater() {
         return updater;
     }
 
     @Override
-    public void setUpdater(Updater update) {
+    public void setUpdater(IUpdater update) {
         updater = update;
     }
 
@@ -54,8 +41,4 @@ public abstract class ComponentDbData implements DbData {
         this.id = id;
     }
 
-    @Override
-    public String getMongoDbFieldName() {
-        return mongoDbFieldName;
-    }
 }

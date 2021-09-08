@@ -1,4 +1,4 @@
-package org.gamedo.persistence.event;
+package org.gamedo.persistence.listeners;
 
 import lombok.extern.log4j.Log4j2;
 import org.bson.Document;
@@ -33,27 +33,26 @@ public class EntityDbDataAfterLoadEventListener extends AbstractMongoEventListen
         final Document document = event.getSource();
 
         try {
-            //the EntityDbData.componentsDbDataMap has been unwrapped to key-value style on writing,
-            // there shouldn't be a field with the same name.
+            final Document componentDataDbMap = new Document();
+            //如果包含componentsMapFieldName，说明存储时没有被打散，这种情况应该不会存在
             if (document.containsKey(componentsMapFieldName)) {
                 log.error(Markers.MongoDB,
                         "the document should not contains field:{}, document:{}",
                         componentsMapFieldName,
                         document);
-                return;
+                //不需要返回，继续执行
             }
 
-            final Document componentDataDbMap = new Document();
             final String clazzName = document.getString(DefaultMongoTypeMapper.DEFAULT_TYPE_KEY);
             final Class<?> clazz = Class.forName(clazzName);
 
-            //check whether the document class is valid.
+            //检测存储时的类型是否正确
             if (!EntityDbData.class.isAssignableFrom(clazz)) {
                 log.error(Markers.MongoDB, "invalid class:{}, document:{}", clazz, document);
                 return;
             }
 
-            //remove all the ComponentDbData and wrap them into the EntityDbData.componentsDbDataMap
+            //将打散的组件重新组合
             document.entrySet().removeIf(entry -> {
                 final String key = entry.getKey();
                 final Object value = entry.getValue();

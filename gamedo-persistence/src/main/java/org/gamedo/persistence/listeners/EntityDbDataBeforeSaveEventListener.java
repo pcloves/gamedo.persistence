@@ -1,4 +1,4 @@
-package org.gamedo.persistence.event;
+package org.gamedo.persistence.listeners;
 
 import lombok.extern.log4j.Log4j2;
 import org.bson.Document;
@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.mapping.MongoPersistentProperty;
 import org.springframework.data.mongodb.core.mapping.event.AbstractMongoEventListener;
 import org.springframework.data.mongodb.core.mapping.event.BeforeSaveEvent;
 
+import java.util.Map;
 import java.util.Objects;
 
 @Log4j2
@@ -30,8 +31,17 @@ public class EntityDbDataBeforeSaveEventListener extends AbstractMongoEventListe
 
         final EntityDbData source = event.getSource();
         final Document document = event.getDocument();
+        //打散原来的map
         final Document componentsMap = (Document) Objects.requireNonNull(document).remove(componentsMapFieldName);
 
+        for (Map.Entry<String, Object> next : componentsMap.entrySet()) {
+            final Object value = next.getValue();
+            if (value instanceof Document) {
+                ((Document) value).remove("_id");
+            }
+        }
+
+        //将所有组件重新添加进来
         document.putAll(componentsMap);
 
         log.debug(Markers.MongoDB, "writing convert finish, source:{}, target:{}", () -> source, () -> document);

@@ -2,8 +2,10 @@ package org.gamedo.persistence.config;
 
 import lombok.extern.log4j.Log4j2;
 import org.gamedo.persistence.GamedoMongoTemplate;
-import org.gamedo.persistence.event.EntityDbDataAfterLoadEventListener;
-import org.gamedo.persistence.event.EntityDbDataBeforeSaveEventListener;
+import org.gamedo.persistence.listeners.ComponentDbDataAfterLoadEventListener;
+import org.gamedo.persistence.listeners.ComponentDbDataBeforeSaveEventListener;
+import org.gamedo.persistence.listeners.EntityDbDataAfterLoadEventListener;
+import org.gamedo.persistence.listeners.EntityDbDataBeforeSaveEventListener;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -41,5 +43,15 @@ public class MyConfiguration {
     @Bean
     EntityDbDataAfterLoadEventListener entityDbDataAfterLoadEventListener(MongoConverter mongoConverter) {
         return new EntityDbDataAfterLoadEventListener(mongoConverter);
+    }
+
+    @Bean
+    ComponentDbDataBeforeSaveEventListener componentDbDataBeforeSaveEventListener() {
+        return new ComponentDbDataBeforeSaveEventListener();
+    }
+
+    @Bean
+    ComponentDbDataAfterLoadEventListener componentDbDataAfterLoadEventListener() {
+        return new ComponentDbDataAfterLoadEventListener();
     }
 }

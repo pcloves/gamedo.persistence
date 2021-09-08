@@ -1,74 +1,50 @@
 package org.gamedo.persistence.db;
 
 /**
- * the DbData interface means it:
+ * {@link DbData}接口，意味着：
  * <ul>
- * <li>has an unique id for query/update</li>
- * <li>has an Update for incrementally serialization</li>
+ * <li>对应一个唯一id，执行更新操作</li>
+ * <li>包含一个{@link IUpdater}，从而实现增量更新</li>
  * </ul>
  */
 public interface DbData {
     /**
-     * @return get the id mapping the _id field in MongoDB
+     * @return 返回唯一id，该id映射在mongoDB的_id字段上
      */
     String getId();
 
     /**
-     * @param id set the id
+     * @param id 设置唯一id
      */
     void setId(String id);
 
     /**
-     * Return the DbData document field name in MongoDB, supposing we have a MongoDB document:
-     * <pre>{@code
-     * {
-     *     "_id" : ObjectId("604f66b6f695830356a6fd56"),
-     *     "_class" : "org.gamedo.persistence.db.EntityDbPlayer",
-     *     "ComponentDbBag" : {
-     *         "itemList" : [
-     *
-     *         ],
-     *         "_class" : "org.gamedo.persistence.db.ComponentDbBag"
-     *     },
-     *     "ComponentDbStatistic" : {
-     *         "name" : "test",
-     *         "_class" : "org.gamedo.persistence.db.ComponentDbStatistic"
-     *     }
-     * }
-     * }</pre>
-     * If the embedded document ComponentDbBag implement this DbData interface, The String of 'ComponentDbBag' should be
-     * the return value of getMongoDbFieldName. If the whole document implement the DbData interface, the getMongoDbField
-     * name should return an empty String.
-     * @return return the full field name in MongoDB
+     * 获取当前正在使用的增量更新器
+     * @return 返回正在使用的增量更新器
      */
-    String getMongoDbFieldName();
+    IUpdater getUpdater();
 
     /**
-     * return the Updater of this DbData own.
-     * @return the Updater is using.
+     * 设置一个新的增量更新器，{@link DbData}的增量更新器都是一次性，意味着每一次存盘后，都会设置一个新的增量更新器
+     * @param updater 新设置的增量更新器
      */
-    Updater getUpdater();
+    void setUpdater(IUpdater updater);
 
     /**
-     * set a new updater of this DbData
-     * @param updater the new Updater
+     * 更新一个字段：key的值为value，实现类需要将value序列化为mongoDB原生的存储数据
+     * @param key 要更新的字段名.
+     * @param value 要更新的数值.
      */
-    void setUpdater(Updater updater);
-
-    /**
-     * mark the key is dirty, and set new value for key
-     * @param key the key to be set.
-     * @param value the new value.
-     */
-    default void setDirty(String key, Object value) {
-        getUpdater().setDirty(key, value);
+    default void update(String key, Object value) {
+        getUpdater().update(key, value);
     }
 
     /**
-     * is the DbData clean or dirty(meaning that the method {@linkplain Updater#setDirty(String, Object)} has been called).
-     * @return true if there are one or more keys set once.
+     * 当前{@link DbData}是否已经更新过，返回true意味着更新方法：{@link DbData#update(String, Object)}被调用过，且没有持久化到db中；
+     * false意味着当前更新器的更新方法没有被调用
+     * @return true意味着{@linkplain IUpdater#update(String, Object)}被调用过，且没有持久化到db中；false意味着当前更新器的更新方法没
+     * 有被调用
      */
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     default boolean isDirty() {
         return getUpdater().isDirty();
     }

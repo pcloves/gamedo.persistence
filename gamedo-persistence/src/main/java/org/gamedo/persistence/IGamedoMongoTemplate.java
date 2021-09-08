@@ -9,68 +9,73 @@ import org.springframework.data.mongodb.core.query.UpdateDefinition;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 
 @SuppressWarnings("unused")
 public interface IGamedoMongoTemplate {
 
+    String ID_FIELD_NAME = "_id";
+
     /**
-     * save a DbData in another thread asynchronously.
+     * 使用{@link ForkJoinPool#commonPool()}线程池，异步存储一个{@link DbData}
      *
-     * @param data the data to be saved.
-     * @param <T>  the DbData child class
-     * @return a CompletableFuture contains the data itself.
+     * @param data 要存储的数据
+     * @param <T>  要存储的数据类型
+     * @return 返回执行该存储的CompletableFuture
      */
     <T extends DbData> CompletableFuture<T> saveDbDataAsync(T data);
 
     /**
-     * save a DbData in another thread asynchronously.
+     * 使用指定的线程池异步存储一个{@link DbData}
      *
-     * @param data     the data to be saved.
-     * @param executor the operating executor
-     * @param <T>      the DbData child class
-     * @return a CompletableFuture contains the data itself.
+     * @param data     要存储的数据
+     * @param executor 要执行存储操作的线程池
+     * @param <T>      要存储的数据类型
+     * @return 返回执行该操作的CompletableFuture
      */
     <T extends DbData> CompletableFuture<T> saveDbDataAsync(T data, Executor executor);
 
     /**
-     * Updates the first DbData that is found in the collection asynchronously. <b>Note that:</b>if the data hasn't saved before
-     * yet, No query will match, and won't insert a new document in the MongoDB either. This method has the consistent
-     * behavior with {@linkplain MongoTemplate#updateFirst(Query, UpdateDefinition, Class)}
+     * 使用{@link ForkJoinPool#commonPool()}线程池，异步更新id为{@link DbData#getId()}的文档，<b>注意：</b>执行本方法前，需要确保本
+     * data已经被持久化到mongoDB中，否则update操作不会被执行，本方法和{@linkplain MongoTemplate#updateFirst(Query, UpdateDefinition, Class)}
+     * 具有相同的语义
      *
-     * @param data the data to be updated.
-     * @param <T>  the DbData child class
-     * @return a CompletableFuture contains the UpdateResult.
+     * @param data 要更新的数据
+     * @param <T>  要更新的数据类型
+     * @return 返回执行该操作的CompletableFuture
      */
     <T extends DbData> CompletableFuture<UpdateResult> updateDbDataFirstAsync(T data);
 
     /**
-     * Updates the first DbData that is found in the collection asynchronously. <b>Note that:</b>if the data hasn't saved before
-     * yet, No query will match, and won't insert a new document in the MongoDB either. This method has the consistent
-     * behavior with {@linkplain MongoTemplate#updateFirst(Query, UpdateDefinition, Class)}
+     * 使用{@link ForkJoinPool#commonPool()}线程池，异步更新id为{@link DbData#getId()}的文档，<b>注意：</b>执行本方法前，需要确保本
+     * data已经被持久化到mongoDB中，否则update操作不会被执行，本方法和{@linkplain MongoTemplate#updateFirst(Query, UpdateDefinition, Class)}
+     * 具有相同的语义
      *
-     * @param data     the data to be updated.
-     * @param executor the operating executor
-     * @param <T>      the DbData child class
-     * @return a CompletableFuture contains the UpdateResult.
+     * @param data     要更新的数据
+     * @param executor 要执行更新操作的线程池
+     * @param <T>      要更新的数据类型
+     * @return 返回执行该操作的CompletableFuture
      */
     <T extends DbData> CompletableFuture<UpdateResult> updateDbDataFirstAsync(T data, Executor executor);
 
     /**
-     * find a {@link ComponentDbData}
-     * @param id the EntityDbData id
-     * @param componentClazz the component class
-     * @param <V> the component clazz type
-     * @return return the componentDbData or null
+     * 使用{@link ForkJoinPool#commonPool()}线程池，异步加载一个组件数据
+     *
+     * @param id             组件所属文档的Id
+     * @param componentClazz 组件所属{@link Class}
+     * @param <V>            组件类型
+     * @return 返回执行该操作的CompletableFuture，如果数据未加载到，则内部值为null
      */
     <V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(String id, Class<V> componentClazz);
 
     /**
-     * find a {@link ComponentDbData}
-     * @param id the EntityDbData id
-     * @param componentClazz the component class
-     * @param executor the operating executor
-     * @param <V> the component clazz type
-     * @return return the componentDbData or null
+     * 使用{@link ForkJoinPool#commonPool()}线程池，异步加载一个组件数据
+     *
+     * @param id             组件所属文档的Id
+     * @param componentClazz 组件所属{@link Class}
+     * @param executor       要执行加载操作的线程池
+     * @param <V>            组件类型
+     * @return 返回执行该操作的CompletableFuture，如果数据未加载到，则内部值为null
      */
     <V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(String id, Class<V> componentClazz, Executor executor);
 }
