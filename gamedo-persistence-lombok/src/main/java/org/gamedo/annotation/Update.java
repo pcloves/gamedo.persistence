@@ -18,14 +18,14 @@ import java.lang.annotation.Target;
  * will generate:<p>
  *
  * <pre>
- * public void markDirtyX() {
- *      this.setDirty("x", this.x);
+ * public void updateX() {
+ *      this.update("x", this.x);
  * }
  * </pre>
  */
 @Target({ElementType.TYPE, ElementType.FIELD})
 @Retention(RetentionPolicy.SOURCE)
-public @interface MarkDirty {
+public @interface Update {
 
     /**
      * access level of the <b>markDirty</b> method

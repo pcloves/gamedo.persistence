@@ -7,7 +7,7 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 import lombok.AccessLevel;
-import org.gamedo.annotation.MarkDirty;
+import org.gamedo.annotation.Update;
 import lombok.core.AST;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
@@ -23,12 +23,12 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 @MetaInfServices
 @HandlerPriority(value = 0, subValue = 1) // we must run AFTER HandleSetter which is at 0 (default value)
-public class HandleMarkDirty extends JavacAnnotationHandler<MarkDirty> {
+public class HandleUpdate extends JavacAnnotationHandler<Update> {
 
     @Override
-    public void handle(AnnotationValues<MarkDirty> annotation, JCAnnotation ast, JavacNode annotationNode) {
+    public void handle(AnnotationValues<Update> annotation, JCAnnotation ast, JavacNode annotationNode) {
 
-        deleteAnnotationIfNeccessary(annotationNode, MarkDirty.class);
+        deleteAnnotationIfNeccessary(annotationNode, Update.class);
         deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
 
         final JavacNode node = annotationNode.up();
@@ -38,67 +38,67 @@ public class HandleMarkDirty extends JavacAnnotationHandler<MarkDirty> {
         final AST.Kind kind = node.getKind();
         switch (kind) {
             case TYPE:
-                createMarkDirtyMethodForFields(annotationNode, node.down(), accessLevel);
+                createUpdateMethodForFields(annotationNode, node.down(), accessLevel);
                 break;
             case FIELD:
-                createMarkDirtyMethodForFields(annotationNode, annotationNode.upFromAnnotationToFields(), accessLevel);
+                createUpdateMethodForFields(annotationNode, annotationNode.upFromAnnotationToFields(), accessLevel);
                 break;
             default:
-                node.addError("@" + MarkDirty.class.getSimpleName() + " is only supported on a class or a field.");
+                node.addError("@" + Update.class.getSimpleName() + " is only supported on a class or a field.");
         }
 
     }
 
-    private void createMarkDirtyMethodForFields(JavacNode source, Iterable<JavacNode> fieldNodes, AccessLevel accessLevel) {
+    private void createUpdateMethodForFields(JavacNode source, Iterable<JavacNode> fieldNodes, AccessLevel accessLevel) {
 
         for (JavacNode fieldNode : fieldNodes) {
             if (fieldQualifies(fieldNode)) {
-                createMarkDirtyMethodForField(source, fieldNode, accessLevel);
+                createUpdateMethodForField(source, fieldNode, accessLevel);
             }
         }
     }
 
-    private void createMarkDirtyMethodForField(JavacNode source, JavacNode fieldNode, AccessLevel accessLevel) {
+    private void createUpdateMethodForField(JavacNode source, JavacNode fieldNode, AccessLevel accessLevel) {
         if (fieldNode.getKind() != AST.Kind.FIELD) {
-            fieldNode.addError("@" + MarkDirty.class.getSimpleName() + " is only supported on a class or a field." + fieldNode);
+            fieldNode.addError("@" + Update.class.getSimpleName() + " is only supported on a class or a field." + fieldNode);
             return;
         }
 
         final JCTree.JCVariableDecl fieldDecl = (JCTree.JCVariableDecl) fieldNode.get();
         if ((fieldDecl.mods.flags & Flags.FINAL) != 0) {
-            fieldNode.addWarning("stop create markDirty method because of the final flag.");
+            fieldNode.addWarning("stop create update method because of the final flag.");
             return;
         }
 
         if ((fieldDecl.mods.flags & Flags.STATIC) != 0) {
-            fieldNode.addWarning("stop create markDirty method because of the static flag.");
+            fieldNode.addWarning("stop create update method because of the static flag.");
             return;
         }
 
-        if (markDirtyMethodAlreadyPresent(fieldNode)) {
-            fieldNode.addWarning(HandlerUtil.buildAccessorName("markDirty", fieldNode.getName()) + " is present, ignore it.");
+        if (updateMethodAlreadyPresent(fieldNode)) {
+            fieldNode.addWarning(HandlerUtil.buildAccessorName("update", fieldNode.getName()) + " is present, ignore it.");
             return;
         }
 
-        if (JavacHandlerUtil.hasAnnotation(MarkDirty.Exclude.class, fieldNode)) {
-            fieldNode.addWarning(MarkDirty.Exclude.class.getSimpleName() + " is present, ignore it.");
+        if (JavacHandlerUtil.hasAnnotation(Update.Exclude.class, fieldNode)) {
+            fieldNode.addWarning(Update.Exclude.class.getSimpleName() + " is present, ignore it.");
             return;
         }
 
-        deleteAnnotationIfNeccessary(fieldNode, MarkDirty.Exclude.class);
+        deleteAnnotationIfNeccessary(fieldNode, Update.Exclude.class);
 
         final JavacNode typeNode = fieldNode.up();
         final JavacTreeMaker typeMarker = typeNode.getTreeMaker();
         final long access = toJavacModifier(accessLevel);
         final JCTree.JCExpression methodType = typeMarker.TypeIdent(CTC_VOID);
-        final Name methodName = fieldNode.toName(HandlerUtil.buildAccessorName("markDirty", fieldNode.getName()));
+        final Name methodName = fieldNode.toName(HandlerUtil.buildAccessorName("update", fieldNode.getName()));
 
         final ListBuffer<JCTree.JCStatement> statements = new ListBuffer<>();
-        final JCTree.JCExpressionStatement setDirty = typeMarker.Exec(typeMarker.Apply(
+        final JCTree.JCExpressionStatement update = typeMarker.Exec(typeMarker.Apply(
                 //参数类型(传入方法的参数的类型) 如果是无参的不能设置为null 使用 List.nil()
                 List.of(memberAccess(typeNode, typeMarker, "java.lang.String"),
                         memberAccess(typeNode, typeMarker, "java.lang.Object")),
-                memberAccess(fieldNode, fieldNode.getTreeMaker(), "setDirty"),
+                memberAccess(fieldNode, fieldNode.getTreeMaker(), "update"),
                 //两个参数
                 List.of(typeMarker.Literal(fieldNode.getName()),
                         typeMarker.Ident(fieldDecl.name)
@@ -106,7 +106,7 @@ public class HandleMarkDirty extends JavacAnnotationHandler<MarkDirty> {
                 )
         );
 
-        statements.append(setDirty);
+        statements.append(update);
 
         final JCTree.JCBlock methodBody = typeMarker.Block(0, statements.toList());
         final JCTree.JCMethodDecl methodDef = typeMarker.MethodDef(typeMarker.Modifiers(access),
@@ -139,12 +139,12 @@ public class HandleMarkDirty extends JavacAnnotationHandler<MarkDirty> {
         return expr;
     }
 
-    private boolean markDirtyMethodAlreadyPresent(JavacNode fieldNode) {
-        String markDirtyMethodName = HandlerUtil.buildAccessorName("markDirty", fieldNode.getName());
+    private boolean updateMethodAlreadyPresent(JavacNode fieldNode) {
+        String updateMethodName = HandlerUtil.buildAccessorName("update", fieldNode.getName());
 
-        if (markDirtyMethodName != null) {
+        if (updateMethodName != null) {
             for (JavacNode node : fieldNode.up().down()) {
-                if (node.getKind() == AST.Kind.METHOD && markDirtyMethodName.equals(node.getName())) {
+                if (node.getKind() == AST.Kind.METHOD && updateMethodName.equals(node.getName())) {
                     return true;
                 }
             }
