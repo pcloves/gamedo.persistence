@@ -27,13 +27,13 @@ import java.lang.annotation.Target;
 public @interface Update {
 
     /**
-     * access level of the <b>markDirty</b> method
-     * @return the access level
+     * 生成的<b>update</b>方法的访问等级
+     * @return 访问等级
      */
     AccessLevel value() default lombok.AccessLevel.PUBLIC;
 
     /**
-     * annotate on a field, meaning that the <b>markDirty</b> method won't generated.
+     * 注解在类的字段上，意味着该字段的<b>update</b>方法不会自动生成
      */
     @Target(ElementType.FIELD)
     @Retention(RetentionPolicy.SOURCE)
