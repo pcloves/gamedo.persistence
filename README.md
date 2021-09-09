@@ -80,8 +80,8 @@ public class Application {
         final ComponentDbBag componentDbData = entityDbPlayer.getComponentDbData(ComponentDbBag.class);
         //5、修改数据
         componentDbData.getItemList().add(1);
-        //6、对修改的变量进行标脏（markDirtyItemList()方法由lombok扩展注解：@MarkDirty自动生成）
-        componentDbData.markDirtyItemList();
+        //6、对修改的变量进行更新（updateItemList()方法由lombok扩展注解：@Updatea自动生成）
+        componentDbData.updateItemList();
         //7、进行异步更新，并通过CompletableFuture检查执行结果（如果使用不指定线程池的重载接口，默认使用ForkJoinPool.commonPool()线程池）。
         dataMongoTemplate.updateFirstAsync(null)
                          .exceptionally(throwable -> {
@@ -141,15 +141,15 @@ public class Application {
 ## 设计思想
 
 ### 拒绝样板代码
-gamedo-persistence-lombok工程提供了 **@MarkDirty** 注解，当该注解被标注到 **DbData** 子类或者类成员上时，注解处理器会自动生成以 **markDirty** 为前缀的更新方法，例如：
+gamedo-persistence-lombok工程提供了 **@MarkDirty** 注解，当该注解被标注到 **DbData** 子类或者类成员上时，注解处理器会自动生成以 **update** 为前缀的更新方法，例如：
 
 ``` java
-    @MarkDirty private int x;
+    @Update private int x;
 ```
 将会生成：
 ``` java
-    public void markDirtyX() {
-        this.getUpdate().setDirty('x', this.x);
+    public void updateX() {
+        this.getUpdate().update('x', this.x);
     }
 ```
 利用该特性，以及lombok的 **@Setter** 和 **Accessors(chain = true)** 注解，可以快速实现数据的更新及标脏，例如：
@@ -169,7 +169,7 @@ gamedo-persistence-lombok工程提供了 **@MarkDirty** 注解，当该注解被
 ```
 可以使用如下方式进行数据更新及标脏：
 ``` java
-    data.setX(5).markDirtyX();
+    data.setX(5).updateX();
 ``` 
 
 
