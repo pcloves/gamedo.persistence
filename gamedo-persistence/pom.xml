@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>gamedo-persistence</artifactId>
-    <name>the core implementation for gamedo persistence module</name>
+    <name>gamedo-persistence</name>
 
     <dependencies>
         <dependency>

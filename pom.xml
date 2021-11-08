@@ -13,10 +13,16 @@
         <revision>1.5.0-SNAPSHOT</revision>
     </properties>
 
-    <name>the persistence module for 'gamedo' backend game server architecture</name>
+    <name>gamedo-persistence-parent</name>
     <artifactId>gamedo-persistence-parent</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
+
+    <modules>
+        <module>gamedo-persistence</module>
+        <module>gamedo-persistence-autoconfiguration</module>
+        <module>gamedo-persistence-spring-boot-starter</module>
+    </modules>
 
     <dependencies>
         <dependency>
@@ -25,28 +31,6 @@
         </dependency>
 
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>all</id>
-            <modules>
-                <module>gamedo-persistence</module>
-                <module>gamedo-persistence-lombok-unshaded</module>
-                <module>gamedo-persistence-lombok</module>
-                <module>gamedo-persistence-autoconfiguration</module>
-                <module>gamedo-persistence-spring-boot-starter</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>nexus-release</id>
-            <modules>
-                <module>gamedo-persistence</module>
-                <module>gamedo-persistence-lombok</module>
-                <module>gamedo-persistence-autoconfiguration</module>
-                <module>gamedo-persistence-spring-boot-starter</module>
-            </modules>
-        </profile>
-    </profiles>
 
     <build>
         <plugins>

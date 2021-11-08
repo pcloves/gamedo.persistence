@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>gamedo-persistence-autoconfiguration</artifactId>
-    <name>the autoconfiguration implementation for gamedo persistence module</name>
+    <name>gamedo-persistence-autoconfiguration</name>
 
     <dependencies>
         <dependency>

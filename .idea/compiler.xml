@@ -10,41 +10,11 @@
         <module name="gamedo-persistence-autoconfiguration" />
         <module name="gamedo-persistence" />
         <module name="gamedo-persistence-spring-boot-starter" />
-        <module name="gamedo-persistence-lombok-unshaded" />
-      </profile>
-      <profile name="Annotation profile for the persistence module for 'gamedo' backend game server architecture" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$PROJECT_DIR$/gamedo-persistence-lombok/target/classes" />
-          <entry name="$PROJECT_DIR$/gamedo-persistence/target/classes" />
-          <entry name="$MAVEN_REPOSITORY$/org/springframework/data/spring-data-mongodb/3.2.3/spring-data-mongodb-3.2.3.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/springframework/spring-tx/5.3.9/spring-tx-5.3.9.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/springframework/spring-context/5.3.9/spring-context-5.3.9.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/springframework/spring-aop/5.3.9/spring-aop-5.3.9.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/springframework/spring-beans/5.3.9/spring-beans-5.3.9.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/springframework/spring-core/5.3.9/spring-core-5.3.9.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/springframework/spring-jcl/5.3.9/spring-jcl-5.3.9.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/springframework/spring-expression/5.3.9/spring-expression-5.3.9.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/springframework/data/spring-data-commons/2.5.3/spring-data-commons-2.5.3.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/mongodb/mongodb-driver-core/4.2.3/mongodb-driver-core-4.2.3.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/slf4j/slf4j-api/1.7.32/slf4j-api-1.7.32.jar" />
-          <entry name="$MAVEN_REPOSITORY$/javax/annotation/javax.annotation-api/1.3.2/javax.annotation-api-1.3.2.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/mongodb/mongodb-driver-sync/4.2.3/mongodb-driver-sync-4.2.3.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/mongodb/bson/4.2.3/bson-4.2.3.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/kohsuke/metainf-services/metainf-services/1.8/metainf-services-1.8.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/springframework/boot/spring-boot-starter-log4j2/2.5.3/spring-boot-starter-log4j2-2.5.3.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/apache/logging/log4j/log4j-slf4j-impl/2.14.1/log4j-slf4j-impl-2.14.1.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/apache/logging/log4j/log4j-api/2.14.1/log4j-api-2.14.1.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/apache/logging/log4j/log4j-core/2.14.1/log4j-core-2.14.1.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/apache/logging/log4j/log4j-jul/2.14.1/log4j-jul-2.14.1.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/slf4j/jul-to-slf4j/1.7.32/jul-to-slf4j-1.7.32.jar" />
-        </processorPath>
-        <module name="gamedo-persistence-lombok" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="gamedo-persistence-lombok" target="11" />
+      <module name="gamedo-persistence-lombok-unshaded" target="11" />
       <module name="gamedo-persistence-starter" target="11" />
     </bytecodeTargetLevel>
   </component>

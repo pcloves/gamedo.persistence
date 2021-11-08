@@ -3,10 +3,6 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/gamedo-persistence-autoconfiguration/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/gamedo-persistence-autoconfiguration/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/gamedo-persistence-lombok-unshaded/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/gamedo-persistence-lombok-unshaded/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/gamedo-persistence-lombok/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/gamedo-persistence-lombok/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/gamedo-persistence-spring-boot-starter/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/gamedo-persistence/src/main/java" charset="UTF-8" />
   </component>
