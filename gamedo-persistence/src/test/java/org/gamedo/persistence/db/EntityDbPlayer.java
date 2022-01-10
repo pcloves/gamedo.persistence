@@ -6,7 +6,7 @@ import java.util.Map;
 
 @Document("player")
 public class EntityDbPlayer extends EntityDbData {
-    public EntityDbPlayer(String id, Map<String, ComponentDbData> componentDbDataMap) {
+    public EntityDbPlayer(Object id, Map<String, ComponentDbData> componentDbDataMap) {
         super(id, componentDbDataMap);
     }
 }

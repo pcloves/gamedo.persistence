@@ -46,7 +46,7 @@ public class GamedoMongoTemplate implements MongoOperations, IndexOperationsProv
 
     private <T extends DbData> CompletableFuture<T> saveAsyncInner(final T data, Executor executor) {
         final String className = data.getClass().getName();
-        final String id = data.getId();
+        final Object id = data.getId();
         final int hashCode = data.hashCode();
 
         final Document document = new Document();
@@ -83,20 +83,20 @@ public class GamedoMongoTemplate implements MongoOperations, IndexOperationsProv
     }
 
     @Override
-    public <V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(String id,
+    public <V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(Object id,
                                                                                          Class<V> componentClazz)
     {
         return findComponentDbDataByIdInner(id, componentClazz, ASYNC_POOL);
     }
 
     @Override
-    public <V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(String id,
+    public <V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(Object id,
                                                                                          Class<V> componentClazz,
                                                                                          Executor executor) {
         return findComponentDbDataByIdInner(id, componentClazz, executor);
     }
 
-    private <V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdInner(String id,
+    private <V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdInner(Object id,
                                                                                           Class<V> componentClazz,
                                                                                           Executor executor) {
         final Query query = new Query();
@@ -115,7 +115,7 @@ public class GamedoMongoTemplate implements MongoOperations, IndexOperationsProv
         final int hashCode = updater.hashCode();
         final Class<? extends DbData> clazz = data.getClass();
         final String className = clazz.getName();
-        final String id = data.getId();
+        final Object id = data.getId();
         if (!data.isDirty()) {
             log.warn(Markers.MongoDB, "the updater is not dirty, class:{}, id:{}, hashCode:{}, updater:{}",
                     className,

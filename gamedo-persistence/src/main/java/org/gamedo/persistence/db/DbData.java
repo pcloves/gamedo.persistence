@@ -11,12 +11,12 @@ public interface DbData {
     /**
      * @return 返回唯一id，该id映射在mongoDB的_id字段上
      */
-    String getId();
+    <T> T getId();
 
     /**
      * @param id 设置唯一id
      */
-    void setId(String id);
+    <T> void setId(T id);
 
     /**
      * 获取当前正在使用的增量更新器

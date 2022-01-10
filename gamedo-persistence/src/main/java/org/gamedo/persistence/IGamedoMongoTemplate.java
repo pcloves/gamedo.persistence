@@ -66,7 +66,7 @@ public interface IGamedoMongoTemplate {
      * @param <V>            组件类型
      * @return 返回执行该操作的CompletableFuture，如果数据未加载到，则内部值为null
      */
-    <V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(String id, Class<V> componentClazz);
+    <V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(Object id, Class<V> componentClazz);
 
     /**
      * 使用{@link ForkJoinPool#commonPool()}线程池，异步加载一个组件数据
@@ -77,5 +77,5 @@ public interface IGamedoMongoTemplate {
      * @param <V>            组件类型
      * @return 返回执行该操作的CompletableFuture，如果数据未加载到，则内部值为null
      */
-    <V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(String id, Class<V> componentClazz, Executor executor);
+    <V extends ComponentDbData> CompletableFuture<V> findComponentDbDataByIdAsync(Object id, Class<V> componentClazz, Executor executor);
 }

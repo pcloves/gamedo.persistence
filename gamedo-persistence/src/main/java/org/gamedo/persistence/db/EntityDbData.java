@@ -33,7 +33,7 @@ import java.util.Map;
  * }
  * </pre>
  * 可以看出{@link EntityDbData#componentDbDataMap}并不存在，且已经被打散，这么做带来了一个优势：就是除了可以加载完整数据，也可以独立加载任
- * 意一个组件数据（使用{@link GamedoMongoTemplate#findComponentDbDataByIdAsync(String, Class)}提供的方
+ * 意一个组件数据（使用{@link GamedoMongoTemplate#findComponentDbDataByIdAsync(Object, Class)}提供的方
  * 法），同时组件也可以独立存储（使用{@link GamedoMongoTemplate#saveDbDataAsync(DbData)}）
  */
 @SuppressWarnings({"unused", "UnusedReturnValue"})
@@ -44,7 +44,7 @@ public class EntityDbData implements DbData {
      * 映射到mongoDB的_id字段
      */
     @Id
-    public volatile String id;
+    public volatile Object id;
     /**
      * 组件所属的{@link Class}的简化名称（{@link Class#getSimpleName()}）到组件的映射
      */
@@ -61,12 +61,12 @@ public class EntityDbData implements DbData {
        this(null, null);
     }
 
-    public EntityDbData(final String id) {
+    public EntityDbData(final Object id) {
         this(id, null);
     }
 
     @PersistenceConstructor
-    public EntityDbData(final String id, final Map<String, ComponentDbData> componentDbDataMap) {
+    public EntityDbData(final Object id, final Map<String, ComponentDbData> componentDbDataMap) {
         this.id = id == null ? new ObjectId().toString() : id;
         this.componentDbDataMap = new HashMap<>(componentDbDataMap == null ? Collections.emptyMap() : componentDbDataMap);
         this.componentDbDataMap.forEach((s, dbData) -> dbData.setId(this.id));
@@ -84,7 +84,7 @@ public class EntityDbData implements DbData {
     @SuppressWarnings("unchecked")
     public <T extends ComponentDbData> T addComponentDbData(final T dbData) {
 
-        final String idThat = dbData.getId();
+        final Object idThat = dbData.getId();
         if (idThat != null) {
             throw new RuntimeException("the dbData has belong to an EntityDbData, this id:" + id +
                     ", that id:" + idThat + ", dbData:" + dbData);
@@ -114,8 +114,14 @@ public class EntityDbData implements DbData {
         return componentDbDataMap.containsKey(dbData.getSimpleName());
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public void setId(String id) {
+    public <T> T getId() {
+        return (T) id;
+    }
+
+    @Override
+    public <T> void setId(T id) {
         this.id = id;
     }
 

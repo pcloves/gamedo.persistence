@@ -46,7 +46,7 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
                     <sourceFileExcludes>
-                        <sourceFileExclude>**/HandleMarkDirty.java</sourceFileExclude>
+                        <sourceFileExclude>**/HandleUpdate.java</sourceFileExclude>
                     </sourceFileExcludes>
                 </configuration>
                 <executions>

@@ -1,20 +1,18 @@
 package org.gamedo.persistence.db;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Transient;
 
 /**
  * {@link ComponentDbData}代表了一个组件存储数据
  */
 @Data
-@EqualsAndHashCode(of = "id")
 public abstract class ComponentDbData implements DbData {
 
     /**
      * 所属{@link EntityDbData}的id
      */
-    private volatile String id;
+    private volatile Object id;
     /**
      * the update of this ComponentDbData
      */
@@ -36,9 +34,14 @@ public abstract class ComponentDbData implements DbData {
         updater = update;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public void setId(String id) {
-        this.id = id;
+    public <T> T getId() {
+        return (T) id;
     }
 
+    @Override
+    public <T> void setId(T id) {
+        this.id = id;
+    }
 }

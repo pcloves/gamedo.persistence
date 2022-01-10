@@ -4,10 +4,7 @@ import com.mongodb.client.result.UpdateResult;
 import lombok.extern.log4j.Log4j2;
 import org.bson.types.ObjectId;
 import org.gamedo.persistence.config.MyConfiguration;
-import org.gamedo.persistence.db.ComponentDbBag;
-import org.gamedo.persistence.db.ComponentDbComplex;
-import org.gamedo.persistence.db.ComponentDbStatistic;
-import org.gamedo.persistence.db.EntityDbPlayer;
+import org.gamedo.persistence.db.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,10 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
@@ -231,11 +225,41 @@ class GamedoMongoTemplateTest {
     }
 
     @Test
+    public void testIdTypeLong() {
+        gamedoMongoTemplate.dropCollection(EntityDbPlayer.class);
+
+        final ComponentDbIdTypeLong componentDbIdTypeLong = new ComponentDbIdTypeLong();
+        final long id = Long.MAX_VALUE;
+        componentDbIdTypeLong.setId(id);
+
+        gamedoMongoTemplate.save(componentDbIdTypeLong);
+
+        final ComponentDbIdTypeLong componentDbIdTypeLong1 = gamedoMongoTemplate.findComponentDbDataByIdAsync(id,ComponentDbIdTypeLong.class).join();
+
+        Assertions.assertEquals(componentDbIdTypeLong, componentDbIdTypeLong1);
+    }
+
+    @Test
+    public void testIdTypeString() {
+        gamedoMongoTemplate.dropCollection(EntityDbPlayer.class);
+
+        final ComponentDbIdTypeString componentDbIdTypeString = new ComponentDbIdTypeString();
+        final String id = UUID.randomUUID().toString();
+        componentDbIdTypeString.setId(id);
+
+        gamedoMongoTemplate.save(componentDbIdTypeString);
+
+        final ComponentDbIdTypeString componentDbIdTypeString1 = gamedoMongoTemplate.findComponentDbDataByIdAsync(id,ComponentDbIdTypeString.class).join();
+
+        Assertions.assertEquals(componentDbIdTypeString, componentDbIdTypeString1);
+    }
+
+    @Test
     public void testComplexData() {
         gamedoMongoTemplate.dropCollection(EntityDbPlayer.class);
 
         final ComponentDbComplex componentDbComplex = ComponentDbComplex.builder().build();
-        componentDbComplex.setId(new ObjectId().toString());
+        componentDbComplex.setId(new ObjectId());
 
         gamedoMongoTemplate.save(componentDbComplex);
 
