@@ -36,15 +36,15 @@ import java.util.Map;
  * 意一个组件数据（使用{@link GamedoMongoTemplate#findComponentDbDataByIdAsync(Object, Class)}提供的方
  * 法），同时组件也可以独立存储（使用{@link GamedoMongoTemplate#saveDbDataAsync(DbData)}）
  */
-@SuppressWarnings({"unused", "UnusedReturnValue"})
+@SuppressWarnings({"unused", "UnusedReturnValue", "rawtypes"})
 @Data
 @EqualsAndHashCode(of = {"id", "componentDbDataMap"})
-public class EntityDbData implements DbData {
+public class EntityDbData<I> implements DbData<I> {
     /**
      * 映射到mongoDB的_id字段
      */
     @Id
-    public volatile Object id;
+    public volatile I id;
     /**
      * 组件所属的{@link Class}的简化名称（{@link Class#getSimpleName()}）到组件的映射
      */
@@ -61,13 +61,14 @@ public class EntityDbData implements DbData {
        this(null, null);
     }
 
-    public EntityDbData(final Object id) {
+    public EntityDbData(final I id) {
         this(id, null);
     }
 
+    @SuppressWarnings("unchecked")
     @PersistenceConstructor
-    public EntityDbData(final Object id, final Map<String, ComponentDbData> componentDbDataMap) {
-        this.id = id == null ? new ObjectId().toString() : id;
+    public EntityDbData(final I id, final Map<String, ComponentDbData> componentDbDataMap) {
+        this.id = id == null ? (I) new ObjectId() : id;
         this.componentDbDataMap = new HashMap<>(componentDbDataMap == null ? Collections.emptyMap() : componentDbDataMap);
         this.componentDbDataMap.forEach((s, dbData) -> dbData.setId(this.id));
 
@@ -114,14 +115,13 @@ public class EntityDbData implements DbData {
         return componentDbDataMap.containsKey(dbData.getSimpleName());
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <T> T getId() {
-        return (T) id;
+    public I getId() {
+        return id;
     }
 
     @Override
-    public <T> void setId(T id) {
+    public void setId(I id) {
         this.id = id;
     }
 

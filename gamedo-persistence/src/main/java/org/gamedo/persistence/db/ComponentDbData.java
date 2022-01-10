@@ -7,12 +7,12 @@ import org.springframework.data.annotation.Transient;
  * {@link ComponentDbData}代表了一个组件存储数据
  */
 @Data
-public abstract class ComponentDbData implements DbData {
+public abstract class ComponentDbData<I> implements DbData<I> {
 
     /**
      * 所属{@link EntityDbData}的id
      */
-    private volatile Object id;
+    private volatile I id;
     /**
      * the update of this ComponentDbData
      */
@@ -34,14 +34,13 @@ public abstract class ComponentDbData implements DbData {
         updater = update;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <T> T getId() {
-        return (T) id;
+    public I getId() {
+        return id;
     }
 
     @Override
-    public <T> void setId(T id) {
+    public void setId(I id) {
         this.id = id;
     }
 }

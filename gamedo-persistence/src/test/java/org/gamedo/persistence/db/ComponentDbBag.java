@@ -11,7 +11,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Document("player")
-public class ComponentDbBag extends ComponentDbData {
+public class ComponentDbBag extends ComponentDbData<String> {
     final List<Integer> itemList = new ArrayList<>();
 
     public ComponentDbBag(final List<Integer> itemList) {

@@ -13,7 +13,7 @@ import java.util.Set;
 @Data
 @Builder
 @Document("player")
-public class ComponentDbComplex extends ComponentDbData
+public class ComponentDbComplex extends ComponentDbData<String>
 {
     private boolean booleanValue;
     private byte byteValue;

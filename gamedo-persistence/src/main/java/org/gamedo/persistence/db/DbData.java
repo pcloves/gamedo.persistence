@@ -1,5 +1,7 @@
 package org.gamedo.persistence.db;
 
+import org.springframework.data.annotation.Id;
+
 /**
  * {@link DbData}接口，意味着：
  * <ul>
@@ -7,16 +9,16 @@ package org.gamedo.persistence.db;
  * <li>包含一个{@link IUpdater}，从而实现增量更新</li>
  * </ul>
  */
-public interface DbData {
+public interface DbData<I> {
     /**
      * @return 返回唯一id，该id映射在mongoDB的_id字段上
      */
-    <T> T getId();
+    I getId();
 
     /**
      * @param id 设置唯一id
      */
-    <T> void setId(T id);
+    void setId(I id);
 
     /**
      * 获取当前正在使用的增量更新器
