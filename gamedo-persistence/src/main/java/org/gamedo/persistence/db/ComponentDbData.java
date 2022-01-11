@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Transient;
 
 /**
  * {@link ComponentDbData}代表了一个组件存储数据
+ * @param <I> id类型，需要和{@link EntityDbData}的主键类型保持一致
  */
 @Data
 public abstract class ComponentDbData<I> implements DbData<I> {

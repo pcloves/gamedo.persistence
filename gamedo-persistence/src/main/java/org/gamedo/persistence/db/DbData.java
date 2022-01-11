@@ -1,13 +1,12 @@
 package org.gamedo.persistence.db;
 
-import org.springframework.data.annotation.Id;
-
 /**
  * {@link DbData}接口，意味着：
  * <ul>
  * <li>对应一个唯一id，执行更新操作</li>
  * <li>包含一个{@link IUpdater}，从而实现增量更新</li>
  * </ul>
+ * @param <I> id的类型
  */
 public interface DbData<I> {
     /**
